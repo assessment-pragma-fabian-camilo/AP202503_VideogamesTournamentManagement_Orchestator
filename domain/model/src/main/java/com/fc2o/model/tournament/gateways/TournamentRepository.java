@@ -13,4 +13,8 @@ public interface TournamentRepository {
   Mono<Tournament> update(Tournament tournament);
   Mono<Tournament> patch(Tournament tournament);
   Mono<Tournament> deleteById(UUID id);
+  Flux<Tournament> findAllByPromoterIdAndIsPaid(UUID promoterId);
+  Mono<Tournament> patchRegisterParticipant(UUID participantId);
+  Mono<Tournament> patchDisqualify(UUID participantId);
+  Mono<Tournament> patchPreRegisterParticipant(UUID participantId);
 }

@@ -6,9 +6,30 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public record Ticket(
   UUID id,
-  UUID buyerId,
+  UUID customerId,
   UUID tournamentId,
   UUID transactionId,
-  Type type
+  Type type,
+  Status status,
+  String qr
 ) {
+  public Boolean isParticipationType() {
+    return type().equals(Type.PARTICIPATION);
+  }
+
+  public Boolean isVisualizationType() {
+    return type().equals(Type.VISUALIZATION);
+  }
+
+  public Boolean isNew() {
+    return status().equals(Status.NEW);
+  }
+
+  public Boolean isUsed() {
+    return status().equals(Status.USED);
+  }
+
+  public Boolean isBlocked() {
+    return status().equals(Status.BLOCKED);
+  }
 }

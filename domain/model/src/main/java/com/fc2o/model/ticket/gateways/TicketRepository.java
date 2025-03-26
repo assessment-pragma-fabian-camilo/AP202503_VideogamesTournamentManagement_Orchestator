@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface TicketRepository {
   Mono<Ticket> findById(UUID id);
+  Flux<Ticket> findAllByTournamentIdAndCustomerId(UUID tournamentId, UUID customerId);
   Flux<Ticket> findAll();
   Mono<Ticket> save(Ticket ticket);
   Mono<Ticket> update(Ticket ticket);
