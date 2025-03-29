@@ -36,7 +36,7 @@ public class PreRegisterParticipantUseCase {
   *
    */
 
-  public Mono<Tournament> preRegisterParticipant(UUID participantId, UUID tournamentId) {
+  public Mono<Tournament> preRegisterParticipant(UUID tournamentId, UUID participantId) {
     return retrieveUserUseCase.retrieveById(participantId)
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))

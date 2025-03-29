@@ -5,8 +5,6 @@ import com.fc2o.model.match.gateways.MatchRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class PatchMatchUseCase {
   private final MatchRepository matchRepository;

@@ -12,6 +12,7 @@ import com.fc2o.usecase.tournament.crud.PatchTournamentUseCase;
 import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class FinalizeTournamentUseCase {
   * Cambiar el estado a FINISHED
    */
 
-  public Mono<Tournament> finalize(UUID tournamentId, UUID userId, Reward reward) {
+  public Mono<Tuple2<Tournament, Reward>> finalize(UUID tournamentId, Reward reward, UUID userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournament.id(), userId, TournamentUseCases.FINALIZE))
       .filter(tournament -> !tournament.isNotStarted())
@@ -50,11 +51,11 @@ public class FinalizeTournamentUseCase {
           .filter(match -> match.isNotStarted() || match.isInProgress())
           .switchIfEmpty(Mono.error(new RuntimeException("Aún hay partidas sin jugar o en progreso")))
       )
-      .doOnNext(tournament -> registerRewardUseCase.registerReward(reward))
-      .flatMap(patchTournamentUseCase::patch);
+      .flatMap(patchTournamentUseCase::patch)
+      .zipWhen(tournament -> registerRewardUseCase.registerReward(reward, tournament));
   }
 
-  public Mono<Tournament> forceFinalize(UUID tournamentId, UUID userId, Reward reward) {
+  public Mono<Tournament> forceFinalize(UUID tournamentId, Reward reward, UUID userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.FORCE_FINALIZE))
       .filter(tournament -> !tournament.isNotStarted())
@@ -65,7 +66,7 @@ public class FinalizeTournamentUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
       .map(tournament -> tournament.toBuilder().status(Status.FINISHED).dateEnd(LocalDate.now()).build())
       .doOnNext(tournament -> cancelMatchUseCase.cancelAllMatchesByTournamentId(tournamentId))
-      .doOnNext(tournament -> registerRewardUseCase.registerReward(reward))
+      .doOnNext(tournament -> registerRewardUseCase.registerReward(reward, tournament))
       .flatMap(patchTournamentUseCase::patch);
   }
 
