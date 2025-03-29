@@ -24,9 +24,9 @@ public class CancelMatchUseCase {
   * Actualizar estado a CANCELED
    */
 
-  public Mono<Match> cancelMatch(UUID matchId, UUID userId) {
+  public Mono<Match> cancelMatch(UUID matchId, UUID tournamentId, UUID userId) {
     return retrieveMatchUseCase.retrieve(matchId)
-      .doOnNext(match -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.CANCEL_MATCH))
+      .doOnNext(match -> permissionsService.validate(tournamentId, userId, TournamentUseCases.CANCEL_MATCH))
       .filter(match -> !match.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("La partida ya terminó")))
       .filter(match -> !match.isCanceled())

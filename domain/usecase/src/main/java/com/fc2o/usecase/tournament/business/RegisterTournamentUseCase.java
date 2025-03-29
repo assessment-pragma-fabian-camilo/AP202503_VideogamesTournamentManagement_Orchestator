@@ -3,7 +3,6 @@ package com.fc2o.usecase.tournament.business;
 import com.fc2o.model.tournament.Tournament;
 import com.fc2o.model.user.User;
 import com.fc2o.service.ValidatePermissionsService;
-import com.fc2o.usecase.tournament.TournamentUseCases;
 import com.fc2o.usecase.tournament.crud.CreateTournamentUseCase;
 import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import com.fc2o.usecase.user.UserUseCases;
@@ -12,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -31,11 +29,12 @@ public class RegisterTournamentUseCase {
   private final ValidatePermissionsService permissionsService;
   private final Short maxFreeTournaments;
 
-  Mono<Tournament> registerTournament(Tournament tournament) {
+  public Mono<Tournament> registerTournament(Tournament tournament) {
     AtomicReference<User> userAtomicReference = new AtomicReference<>();
     return Mono.just(tournament)
       .doOnNext(t -> permissionsService.validate(tournament.promoterId(), UserUseCases.REGISTER_TOURNAMENT))
       .filter(Tournament::isPaid)
+      .switchIfEmpty(createTournamentUseCase.create(tournament))
       .flatMap(
         t ->
           retrieveUserUseCase.retrieveById(t.promoterId())
@@ -49,7 +48,7 @@ public class RegisterTournamentUseCase {
               )
             )
             .map(totalFreeTournaments -> tournament)
-      )
-      .doOnSuccess(createTournamentUseCase::create);
+            .flatMap(createTournamentUseCase::create)
+      );
   }
 }
