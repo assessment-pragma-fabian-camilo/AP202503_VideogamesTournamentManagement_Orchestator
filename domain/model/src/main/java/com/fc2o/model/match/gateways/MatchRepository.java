@@ -4,16 +4,15 @@ import com.fc2o.model.match.Match;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
 
 public interface MatchRepository {
-  Mono<Match> findById(UUID id);
+  Mono<Match> findById(String id);
   Flux<Match> findAll();
-  Flux<Match> findAllByTournamentId(UUID tournamentId);
-  Flux<Match> findAllByParticipantIdAndTournamentId(UUID participantId, UUID tournamentId);
+  Flux<Match> findAllByTournamentId(String tournamentId);
+  Flux<Match> findAllByParticipantIdAndTournamentId(String participantId, String tournamentId);
   Mono<Match> save(Match match);
   Mono<Match> update(Match match);
   Mono<Match> patch(Match match);
-  Mono<Match> deleteById(UUID id);
+  Mono<Match> deleteById(String id);
 
 }

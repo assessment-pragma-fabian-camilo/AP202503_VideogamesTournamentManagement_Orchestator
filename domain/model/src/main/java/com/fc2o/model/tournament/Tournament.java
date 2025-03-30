@@ -8,15 +8,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record Tournament(
-  UUID id,
+  String id,
   String name,
   String ruleset,
-  UUID promoterId,
-  UUID gameId,
+  String promoterId,
+  String gameId,
   Map<Byte, BigDecimal> prizePerPosition,
   Boolean isPaid,
   Status status,
@@ -29,14 +28,13 @@ public record Tournament(
   List<Transmission> transmissions,
   Commission commission,
   @Singular
-  Set<UUID> preRegisteredParticipantIds,
+  Set<String> preRegisteredParticipantIds,
   @Singular
-  Set<UUID> participantIds,
+  Set<String> participantIds,
   @Singular
-  Set<UUID> disqualifiedParticipantIds,
+  Set<String> disqualifiedParticipantIds,
   @Singular
-  Set<UUID> moderatorIds,
-  Set<UUID> teamIds,
+  Set<String> moderatorIds,
   Price price,
   String closedTournamentJustification
 ) {

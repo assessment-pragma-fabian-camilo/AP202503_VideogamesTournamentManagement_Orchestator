@@ -1,14 +1,15 @@
 package com.fc2o.model.ticket;
 import lombok.Builder;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 public record Ticket(
-  UUID id,
-  UUID customerId,
-  UUID tournamentId,
-  UUID transactionId,
+  String id,
+  LocalDateTime createdTime,
+  String customerId,
+  String tournamentId,
+  String transactionId,
   Type type,
   Status status,
   String qr

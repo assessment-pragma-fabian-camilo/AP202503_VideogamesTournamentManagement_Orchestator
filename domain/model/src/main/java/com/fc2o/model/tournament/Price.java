@@ -7,6 +7,6 @@ import java.math.BigDecimal;
 @Builder
 public record Price(
   BigDecimal participation,
-  BigDecimal view
+  BigDecimal visualization
 ) {
 }
