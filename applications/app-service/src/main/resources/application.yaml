@@ -33,3 +33,34 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+driven-adapter:
+  airtable:
+    base-url: "https://api.airtable.com/v0"
+    user:
+      base-path:
+      bearer:
+    transaction:
+      base-path:
+      bearer:
+    tournament:
+      base-path:
+      bearer:
+    ticket:
+      base-path:
+      bearer:
+    reward:
+      base-path:
+      bearer:
+    registration:
+      base-path:
+      bearer:
+    match:
+      base-path:
+      bearer:
+    game:
+      base-path:
+      bearer:
+    donation:
+      base-path:
+      bearer:

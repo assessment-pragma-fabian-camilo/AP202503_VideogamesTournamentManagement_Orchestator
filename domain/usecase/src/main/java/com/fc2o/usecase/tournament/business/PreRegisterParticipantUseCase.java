@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class PreRegisterParticipantUseCase {
@@ -36,7 +36,7 @@ public class PreRegisterParticipantUseCase {
   *
    */
 
-  public Mono<Tournament> preRegisterParticipant(UUID tournamentId, UUID participantId) {
+  public Mono<Tournament> preRegisterParticipant(String tournamentId, String participantId) {
     return retrieveUserUseCase.retrieveById(participantId)
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))
@@ -61,10 +61,10 @@ public class PreRegisterParticipantUseCase {
       .doOnNext(status ->
         createRegistrationUseCase.create(buildRegistration(participantId, tournamentId))
       )
-      .flatMap(status -> patchTournamentUseCase.patchPreRegisterParticipant(participantId));
+      .flatMap(status -> patchTournamentUseCase.patchPreRegisterParticipant(tournamentId, participantId));
   }
 
-  public Mono<Tournament> forcePreRegisterParticipant(UUID participantId, UUID tournamentId, UUID userId) {
+  public Mono<Tournament> forcePreRegisterParticipant(String participantId, String tournamentId, String userId) {
     return retrieveUserUseCase.retrieveById(participantId)
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))
@@ -90,12 +90,11 @@ public class PreRegisterParticipantUseCase {
       .doOnNext(tournament ->
         createRegistrationUseCase.create(buildRegistration(participantId, tournamentId))
       )
-      .flatMap(status -> patchTournamentUseCase.patchPreRegisterParticipant(participantId));
+      .flatMap(status -> patchTournamentUseCase.patchPreRegisterParticipant(tournamentId, participantId));
   }
 
-  private Transaction buildTransaction(UUID participantId, UUID tournamentId, Status status) {
+  private Transaction buildTransaction(String participantId, String tournamentId, Status status) {
     return Transaction.builder()
-      .id(UUID.randomUUID())
       .type(Type.PARTICIPATION)
       .status(status)
       .customerId(participantId)
@@ -104,9 +103,8 @@ public class PreRegisterParticipantUseCase {
       .build();
   }
 
-  private Registration buildRegistration(UUID participantId, UUID tournamentId) {
+  private Registration buildRegistration(String participantId, String tournamentId) {
     return Registration.builder()
-      .id(UUID.randomUUID())
       .createdTime(LocalDateTime.now())
       .tournamentId(tournamentId)
       .status(com.fc2o.model.registration.Status.PENDING)

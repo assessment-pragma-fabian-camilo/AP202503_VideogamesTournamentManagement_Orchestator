@@ -6,17 +6,17 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class RetrieveTournamentUseCase {
   private final TournamentRepository tournamentRepository;
 
-  public Mono<Tournament> retrieveById(UUID id) {
+  public Mono<Tournament> retrieveById(String id) {
     return tournamentRepository.findById(id);
   }
 
-  public Flux<Tournament> findAllByPromoterId(UUID promoterId) {
+  public Flux<Tournament> findAllByPromoterId(String promoterId) {
     return tournamentRepository.findAllByPromoterId(promoterId);
   }
 }
