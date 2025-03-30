@@ -9,7 +9,7 @@ import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class RescheduleTournamentUseCase {
@@ -22,7 +22,7 @@ public class RescheduleTournamentUseCase {
   * Validar que el estado no sea CANCELED, IN PROGRESS o FINISHED
    */
 
-  public Mono<Tournament> reschedule(Tournament tournament, UUID userId) {
+  public Mono<Tournament> reschedule(Tournament tournament, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournament.id())
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.RESCHEDULE))
       .zipWhen(this::rescheduleStartDate)
@@ -31,7 +31,7 @@ public class RescheduleTournamentUseCase {
       .flatMap(t -> patchTournamentUseCase.patch(tournament));
   }
 
-  public Mono<Tournament> forceReschedule(Tournament tournament, UUID userId) {
+  public Mono<Tournament> forceReschedule(Tournament tournament, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournament.id())
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.FORCE_RESCHEDULE))
       .filter(t -> !t.isFinished())

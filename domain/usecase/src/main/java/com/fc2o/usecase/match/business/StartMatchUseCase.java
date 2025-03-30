@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class StartMatchUseCase {
@@ -27,7 +26,7 @@ public class StartMatchUseCase {
   * Actualizar Match en estado STARTED
    */
 
-  public Mono<Match> startMatch(UUID tournamentId, UUID matchId, UUID userId) {
+  public Mono<Match> startMatch(String tournamentId, String matchId, String userId) {
     return retrieveMatchUseCase.retrieve(matchId)
       .doOnNext(match -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.START_MATCH))
       .filter(match -> !match.isInProgress())
@@ -42,7 +41,7 @@ public class StartMatchUseCase {
       .flatMap(patchMatchUseCase::patch);
   }
 
-  public Mono<Match> forceStartMatch(UUID matchId, UUID userId) {
+  public Mono<Match> forceStartMatch(String matchId, String userId) {
     return retrieveMatchUseCase.retrieve(matchId)
       .doOnNext(match -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.FORCE_START_MATCH))
       .filter(Match::isInProgress)

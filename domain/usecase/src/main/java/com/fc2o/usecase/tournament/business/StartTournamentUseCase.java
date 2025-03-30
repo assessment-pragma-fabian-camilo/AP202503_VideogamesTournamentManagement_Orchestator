@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class StartTournamentUseCase {
@@ -26,7 +26,7 @@ public class StartTournamentUseCase {
   * Cambiar el estado a IN_PROGRESS
    */
 
-  public Mono<Tournament> start(UUID tournamentId, UUID userId) {
+  public Mono<Tournament> start(String tournamentId, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournament.id(), userId, TournamentUseCases.START))
       .filter(tournament -> !tournament.isFinished())
@@ -46,7 +46,7 @@ public class StartTournamentUseCase {
   }
 
 
-  public Mono<Tournament> forceStart(UUID tournamentId, UUID userId) {
+  public Mono<Tournament> forceStart(String tournamentId, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.FORCE_START))
       .filter(tournament -> !tournament.isFinished())
