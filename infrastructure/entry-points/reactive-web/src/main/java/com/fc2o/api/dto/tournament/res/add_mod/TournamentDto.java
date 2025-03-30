@@ -4,12 +4,12 @@ import lombok.Builder;
 import lombok.Singular;
 
 import java.util.Set;
-import java.util.UUID;
+
 
 @Builder
 public record TournamentDto(
-  UUID id,
+  String id,
   @Singular
-  Set<UUID> moderatorIds
+  Set<String> moderatorIds
 ) {
 }

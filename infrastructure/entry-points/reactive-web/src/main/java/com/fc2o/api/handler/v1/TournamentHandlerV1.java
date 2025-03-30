@@ -38,7 +38,7 @@ public class TournamentHandlerV1 {
   private final FinalizeTournamentMapper finalizeTournamentMapper;
   private final RescheduleTournamentMapper rescheduleTournamentMapper;
   private final StartTournamentMapper startTournamentMapper;
-  private final UUID USER_ID = UUID.randomUUID();
+  private final String USER_ID = UUID.randomUUID().toString();
 
   //  @PreAuthorize("hasRole('permissionGETOther')")
   public Mono<ServerResponse> register(ServerRequest serverRequest) {
@@ -79,8 +79,8 @@ public class TournamentHandlerV1 {
     log.info(serverRequest);
     return disqualifyParticipantUseCase
       .disqualifyParticipant(
-        UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
-        UUID.fromString(serverRequest.pathVariables().get("userId")),
+        serverRequest.pathVariables().get("tournamentId"),
+        serverRequest.pathVariables().get("userId"),
         USER_ID
       )
       .flatMap(response -> ServerResponse.ok().bodyValue(""));
@@ -92,7 +92,7 @@ public class TournamentHandlerV1 {
       .map(finalizeTournamentMapper::toReward)
       .flatMap(reward ->
         finalizeTournamentUseCase
-          .finalize(UUID.fromString(serverRequest.pathVariables().get("tournamentId")), reward, USER_ID)
+          .finalize(serverRequest.pathVariables().get("tournamentId"), reward, USER_ID)
       )
       .map(objects -> finalizeTournamentMapper.toFinalizeTournamentResponseDto(objects.getT1(), objects.getT2()))
       .doOnNext(log::info)
@@ -103,8 +103,8 @@ public class TournamentHandlerV1 {
     log.info(serverRequest);
     return preRegisterParticipantUseCase
       .preRegisterParticipant(
-        UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
-        UUID.fromString(serverRequest.pathVariables().get("userId"))
+        serverRequest.pathVariables().get("tournamentId"),
+        serverRequest.pathVariables().get("userId")
       )
       .flatMap(response -> ServerResponse.ok().bodyValue(""));
   }
@@ -113,9 +113,9 @@ public class TournamentHandlerV1 {
     log.info(serverRequest);
     return registerParticipantUseCase
       .registerParticipant(
-        UUID.fromString(serverRequest.pathVariables().get("ticketId")),
-        UUID.fromString(serverRequest.pathVariables().get("userId")),
-        UUID.fromString(serverRequest.pathVariables().get("tournamentId"))
+        serverRequest.pathVariables().get("ticketId"),
+        serverRequest.pathVariables().get("userId"),
+        serverRequest.pathVariables().get("tournamentId")
       )
       .flatMap(response -> ServerResponse.ok().bodyValue(""));
   }
@@ -125,7 +125,7 @@ public class TournamentHandlerV1 {
     Tournament tournament = Tournament.builder()
       .dateStart(LocalDate.parse(serverRequest.queryParams().get("dateStart").getFirst()))
       .dateEnd(LocalDate.parse(serverRequest.queryParams().get("dateEnd").getFirst()))
-      .id(UUID.fromString(serverRequest.pathVariables().get("tournamentId")))
+      .id(serverRequest.pathVariables().get("tournamentId"))
       .build();
     serverRequest.queryParams();
     return rescheduleTournamentUseCase
@@ -137,7 +137,7 @@ public class TournamentHandlerV1 {
 
   public Mono<ServerResponse> start(ServerRequest serverRequest) {
     log.info(serverRequest);
-    return startTournamentUseCase.start(UUID.fromString(serverRequest.pathVariables().get("tournamentId")), USER_ID)
+    return startTournamentUseCase.start(serverRequest.pathVariables().get("tournamentId"), USER_ID)
       .map(startTournamentMapper::toStartTournamentResponseDto)
       .doOnNext(log::info)
       .flatMap(response -> ServerResponse.ok().bodyValue(response));

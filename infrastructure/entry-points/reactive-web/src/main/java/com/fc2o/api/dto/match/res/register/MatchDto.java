@@ -5,13 +5,13 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.UUID;
+
 
 @Builder
 public record MatchDto(
-  UUID id,
-  Set<UUID> participantIds,
-  UUID tournamentId,
+  String id,
+  Set<String> participantIds,
+  String tournamentId,
   LocalDate dateStart,
   StatusDto status
 ) {

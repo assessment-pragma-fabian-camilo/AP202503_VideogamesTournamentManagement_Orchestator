@@ -34,7 +34,7 @@ public class MatchHandlerV1 {
   private final FinalizeMatchMapper finalizeMatchMapper;
   private final StartMatchMapper startMatchMapper;
 
-  private final UUID USER_ID = UUID.randomUUID();
+  private final String USER_ID = UUID.randomUUID().toString();
 
   //  @PreAuthorize("hasRole('permissionGETOther')")
   public Mono<ServerResponse> register(ServerRequest serverRequest) {
@@ -43,7 +43,7 @@ public class MatchHandlerV1 {
       .map(registerMatchMapper::toMatch)
       .flatMap(match ->
         registerMatchUseCase
-          .registerMatch(UUID.fromString(serverRequest.pathVariables().get("tournamentId")), match, USER_ID)
+          .registerMatch(serverRequest.pathVariables().get("tournamentId"), match, USER_ID)
       )
       .map(registerMatchMapper::toRegisterMatchResponseDto)
       .doOnNext(log::info)
@@ -58,8 +58,8 @@ public class MatchHandlerV1 {
     log.info(serverRequest);
     return cancelMatchUseCase
       .cancelMatch(
-        UUID.fromString(serverRequest.pathVariables().get("matchId")),
-        UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
+        serverRequest.pathVariables().get("matchId"),
+        serverRequest.pathVariables().get("tournamentId"),
         USER_ID
       )
       .map(cancelMatchMapper::toCancelMatchResponseDto)
@@ -72,8 +72,8 @@ public class MatchHandlerV1 {
       .doOnNext(log::info)
       .flatMap(dto ->
         finalizeMatchUseCase.finalizeMatch(
-          UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
-          UUID.fromString(serverRequest.pathVariables().get("matchId")),
+          serverRequest.pathVariables().get("tournamentId"),
+          serverRequest.pathVariables().get("matchId"),
           dto.match().winnerId(),
           USER_ID
         )
@@ -86,8 +86,8 @@ public class MatchHandlerV1 {
   public Mono<ServerResponse> start(ServerRequest serverRequest) {
     log.info(serverRequest);
     return startMatchUseCase.startMatch(
-        UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
-        UUID.fromString(serverRequest.pathVariables().get("matchId")),
+        serverRequest.pathVariables().get("tournamentId"),
+        serverRequest.pathVariables().get("matchId"),
         USER_ID
       )
       .map(startMatchMapper::toStartMatchResponseDto)
