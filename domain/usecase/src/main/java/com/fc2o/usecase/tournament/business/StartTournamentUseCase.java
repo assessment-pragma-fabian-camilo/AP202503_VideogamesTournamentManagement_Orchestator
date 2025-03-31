@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class StartTournamentUseCase {
         tournament.placeMinimum().compareTo(Integer.valueOf(tournament.participantIds().size()).shortValue()) <= 0
       )
       .switchIfEmpty(Mono.error(new RuntimeException("Aún no se alcanza la cuota mínima de participantes")))
-      .filter(tournament -> tournament.dateStart().isAfter(LocalDate.now()))
+      .filter(tournament -> LocalDate.parse(tournament.dateEnd()).isAfter(LocalDate.now()))
       .switchIfEmpty(Mono.error(new RuntimeException("Aún no llega la fecha de inicio del torneo")))
       .map(tournament -> tournament.toBuilder().status(Status.IN_PROGRESS).build())
       .flatMap(patchTournamentUseCase::patch);
@@ -55,7 +56,10 @@ public class StartTournamentUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(tournament -> !tournament.isInProgress())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya empezó")))
-      .map(tournament -> tournament.toBuilder().status(Status.IN_PROGRESS).dateStart(LocalDate.now()).build())
+      .map(tournament -> tournament.toBuilder()
+        .status(Status.IN_PROGRESS).dateStart(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        .build()
+      )
       .flatMap(patchTournamentUseCase::patch);
   }
 }

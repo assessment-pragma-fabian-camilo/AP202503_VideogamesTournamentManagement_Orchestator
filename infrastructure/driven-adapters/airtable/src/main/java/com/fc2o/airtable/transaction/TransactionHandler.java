@@ -41,6 +41,15 @@ public class TransactionHandler implements TransactionRepository {
   }
 
   @Override
+  public Mono<Transaction> retrieveByReference(String reference) {
+    return webClient.retrieveAll()
+      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+      .filter(record -> record.fields().reference().equals(reference))
+      .singleOrEmpty()
+      .map(mapper::toTransaction);
+  }
+
+  @Override
   public Flux<Transaction> findAll() {
     return webClient.retrieveAll()
       .flatMapMany(dto -> Flux.fromIterable(dto.records()))

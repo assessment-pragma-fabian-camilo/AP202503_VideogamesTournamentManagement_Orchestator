@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 @RequiredArgsConstructor
 public class StartMatchUseCase {
@@ -35,9 +37,13 @@ public class StartMatchUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("La partida ya finalizó")))
       .filter(match -> !match.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("La partida fue cancelada")))
-      .filter(match -> match.dateStart().isAfter(LocalDate.now()))
+      .filter(match -> LocalDate.parse(match.dateStart()).isAfter(LocalDate.now()))
       .switchIfEmpty(Mono.error(new RuntimeException("Aún no llega la fecha de inicio de la partida")))
-      .map(match -> match.toBuilder().status(Status.IN_PROGRESS).timeStart(LocalDateTime.now()).build())
+      .map(match -> match.toBuilder()
+        .status(Status.IN_PROGRESS)
+        .timeStart(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+        .build()
+      )
       .flatMap(patchMatchUseCase::patch);
   }
 
@@ -50,7 +56,12 @@ public class StartMatchUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("La partida ya finalizó")))
       .filter(Match::isCanceled)
       .switchIfEmpty(Mono.error(new RuntimeException("La partida fue cancelada")))
-      .map(match -> match.toBuilder().status(Status.IN_PROGRESS).dateStart(LocalDate.now()).timeStart(LocalDateTime.now()).build())
+      .map(match -> match.toBuilder()
+        .status(Status.IN_PROGRESS)
+        .timeStart(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+        .dateStart(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        .build()
+      )
       .flatMap(patchMatchUseCase::patch);
   }
 }

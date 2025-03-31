@@ -1,5 +1,6 @@
 package com.fc2o.api;
 
+import com.fc2o.api.dto.ErrorResponse;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -9,6 +10,8 @@ import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.*;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
 
 @Order(-2)
 @Component
@@ -27,9 +30,19 @@ public class ExceptionHandler extends AbstractErrorWebExceptionHandler {
   protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
     return RouterFunctions.route(RequestPredicates.all(), this::renderErrorResponse);
   }
+
   private Mono<ServerResponse> renderErrorResponse(ServerRequest serverRequest) {
     return Mono.error(getError(serverRequest))
-      .onErrorResume(Exception.class, e -> ServerResponse.badRequest().bodyValue(e.getMessage()))
+      .onErrorResume(Exception.class, e ->
+        ServerResponse
+          .badRequest()
+          .bodyValue(
+            ErrorResponse.builder()
+              .dateTime(LocalDateTime.now().toString())
+              .errorMessage(e.getMessage())
+              .build()
+          )
+      )
       .cast(ServerResponse.class);
   }
 }

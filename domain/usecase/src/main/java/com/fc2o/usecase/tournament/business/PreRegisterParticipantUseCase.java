@@ -2,6 +2,7 @@ package com.fc2o.usecase.tournament.business;
 
 import com.fc2o.model.registration.Registration;
 import com.fc2o.model.tournament.Tournament;
+import com.fc2o.model.transaction.PaymentMethod;
 import com.fc2o.model.transaction.Status;
 import com.fc2o.model.transaction.Transaction;
 import com.fc2o.model.transaction.Type;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 
 @RequiredArgsConstructor
@@ -30,38 +32,38 @@ public class PreRegisterParticipantUseCase {
   private final RetrieveUserUseCase retrieveUserUseCase;
 
   /*
-  * Validar que el participante no esté registrado en este torneo
-  * Crear Transacción en STARTED
-  * Creat Registro en PENDING
-  *
+   * Validar que el participante no esté registrado en este torneo
+   * Crear Transacción en STARTED
+   * Creat Registro en PENDING
+   *
    */
 
-  public Mono<Tournament> preRegisterParticipant(String tournamentId, String participantId) {
+  public Mono<Transaction> preRegisterParticipant(String tournamentId, String participantId) {
     return retrieveUserUseCase.retrieveById(participantId)
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))
       .flatMap(user -> retrieveTournamentUseCase.retrieveById(tournamentId))
       .doOnNext(ticket -> permissionsService.validate(tournamentId, participantId, TournamentUseCases.PREREGISTER_PARTICIPANT))
-      .filter(tournament -> tournament.preRegisteredParticipantIds().contains(participantId))
+      .filter(tournament -> !tournament.preRegisteredParticipantIds().contains(participantId))
       .switchIfEmpty(Mono.error(new RuntimeException("Ya tienes un pre-registro activo para este torneo")))
-      .filter(tournament -> tournament.participantIds().contains(participantId))
+      .filter(tournament -> !tournament.participantIds().contains(participantId))
       .switchIfEmpty(Mono.error(new RuntimeException("Ya eres un participante activo en este torneo")))
-      .filter(Tournament::isInProgress)
+      .filter(tournament -> !tournament.isInProgress())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya inició")))
-      .filter(Tournament::isFinished)
+      .filter(tournament -> !tournament.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya terminó")))
-      .filter(Tournament::isCanceled)
+      .filter(tournament -> !tournament.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(Tournament::isPaid)
       .map(tournament -> Status.STARTED)
       .switchIfEmpty(Mono.just(Status.APPROVED))
       .doOnNext(status ->
+        createRegistrationUseCase.create(buildRegistration(participantId, tournamentId)).subscribe()
+      )
+      .doOnNext(status -> patchTournamentUseCase.patchPreRegisterParticipant(tournamentId, participantId).subscribe())
+      .flatMap(status ->
         createTransactionUseCase.create(buildTransaction(participantId, tournamentId, status))
-      )
-      .doOnNext(status ->
-        createRegistrationUseCase.create(buildRegistration(participantId, tournamentId))
-      )
-      .flatMap(status -> patchTournamentUseCase.patchPreRegisterParticipant(tournamentId, participantId));
+      );
   }
 
   public Mono<Tournament> forcePreRegisterParticipant(String participantId, String tournamentId, String userId) {
@@ -96,16 +98,16 @@ public class PreRegisterParticipantUseCase {
   private Transaction buildTransaction(String participantId, String tournamentId, Status status) {
     return Transaction.builder()
       .type(Type.PARTICIPATION)
+      .paymentMethod(PaymentMethod.NONE)
       .status(status)
       .customerId(participantId)
       .tournamentId(tournamentId)
-      .createdTime(LocalDateTime.now())
+      .reference(Base64.getEncoder().encodeToString((participantId + "|" + tournamentId + "|" + LocalDateTime.now()).getBytes()))
       .build();
   }
 
   private Registration buildRegistration(String participantId, String tournamentId) {
     return Registration.builder()
-      .createdTime(LocalDateTime.now())
       .tournamentId(tournamentId)
       .status(com.fc2o.model.registration.Status.PENDING)
       .participantId(participantId)

@@ -19,32 +19,35 @@ public class RegisterMatchUseCase {
   private final ValidateTournamentPermissionsService permissionsService;
 
   /*
-  * Validar que todos los participantes están en el torneo
-  * Validar permisos de quien crea el match sobre el torneo
-  * Crear el match en estado NOT_STARTED
+   * Validar que todos los participantes están en el torneo
+   * Validar permisos de quien crea el match sobre el torneo
+   * Crear el match en estado NOT_STARTED
    */
 
   public Mono<Match> registerMatch(String tournamentId, Match match, String userId) {
-    AtomicReference<StringBuffer> StringsNotRegistered = new AtomicReference<>();
+    AtomicReference<StringBuffer> stringsNotRegistered = new AtomicReference<>();
+    stringsNotRegistered.set(new StringBuffer());
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournamentId, userId, TournamentUseCases.REGISTER_MATCH))
       .flatMapMany(tournament ->
         Flux.fromIterable(match.participantIds())
-          .filter(String -> !tournament.participantIds().contains(String))
-          .doOnNext(String -> StringsNotRegistered.get().append(", ").append(String.toString()))
+          .filter(id -> !tournament.participantIds().contains(id))
+          .doOnNext(id -> stringsNotRegistered.get().append(", ").append(id))
+          .doOnNext(s -> Mono.error(new RuntimeException(s)))
       )
       .singleOrEmpty()
-      .switchIfEmpty(
+      .doOnNext(s ->
         Mono.error(
           new RuntimeException(
             String.format(
               "Los participantes (%s) no están registrados para este torneo",
-              StringsNotRegistered.get().substring(2)
+              stringsNotRegistered.get().substring(2)
             )
           )
         )
       )
-      .map(String -> match.toBuilder().status(Status.NOT_STARTED).build())
+      .switchIfEmpty(Mono.just(""))
+      .map(id -> match.toBuilder().tournamentId(tournamentId).status(Status.NOT_STARTED).build())
       .flatMap(createMatchUseCase::create);
   }
 }

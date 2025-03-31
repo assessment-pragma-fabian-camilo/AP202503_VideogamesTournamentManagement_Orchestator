@@ -1,20 +1,19 @@
 package com.fc2o.model.match;
 import lombok.Builder;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.Set;
 
 @Builder(toBuilder = true)
 public record Match(
   String id,
-  LocalDateTime createdTime,
+  String createdTime,
   Set<String> participantIds,
   String winnerId,
   String tournamentId,
-  LocalDateTime timeStart,
-  LocalDate dateStart,
-  LocalDateTime timeEnd,
+  String timeStart,
+  String dateStart,
+  String timeEnd,
   Status status
 ) {
   //NOT_STARTED, IN_PROGRESS, FINISHED, CANCELED

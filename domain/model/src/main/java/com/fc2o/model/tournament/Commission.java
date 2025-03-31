@@ -6,6 +6,6 @@ import lombok.Builder;
 public record Commission(
   Float visualizationPercentage,
   Float participationPercentage,
-  Float DonationPercentage
+  Float donationPercentage
 ) {
 }

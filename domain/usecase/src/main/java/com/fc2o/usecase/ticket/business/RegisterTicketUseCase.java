@@ -19,15 +19,15 @@ public class RegisterTicketUseCase {
   * Validar que haya una transacción en estado APPROVED
    */
 
-  public Mono<Ticket> registerParticipationTicket(String tournamentId, String customerId) {
-    return retrieveTransactionUseCase.retrieveByTournamentIdAndCustomerId(tournamentId, customerId)
+  public Mono<Ticket> registerTicket(String tournamentId, String customerId, String reference) {
+    return retrieveTransactionUseCase.retrieveByReference(reference)
       .filter(Transaction::isApproved)
       .switchIfEmpty(Mono.error(new RuntimeException("La transacción aún no ha sido aprobada")))
       .map(transaction ->
         Ticket.builder()
           .transactionId(transaction.id())
           .status(Status.NEW)
-          .type(Type.PARTICIPATION)
+          .type(Type.valueOf(transaction.type().name()))
           .customerId(customerId)
           .tournamentId(tournamentId)
           .build()

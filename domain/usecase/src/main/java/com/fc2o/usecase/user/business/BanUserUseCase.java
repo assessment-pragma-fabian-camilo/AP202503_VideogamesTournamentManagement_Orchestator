@@ -21,7 +21,7 @@ public class BanUserUseCase {
   public Mono<User> banUser(String adminId, String userId) {
     return retrieveUserUseCase.retrieveById(userId)
       .doOnNext(user -> permissionsService.validate(adminId, UserUseCases.BAN_USER))
-      .map(user -> User.builder().status(Status.BANED).build())
+      .map(user -> User.builder().status(Status.BANNED).build())
       .flatMap(patchUserUseCase::patch);
   }
 }

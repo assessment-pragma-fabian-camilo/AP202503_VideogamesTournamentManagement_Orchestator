@@ -9,6 +9,7 @@ public interface TransactionRepository {
   Mono<Transaction> findById(String id);
   Mono<Transaction> findByTournamentId(String tournamentId);
   Mono<Transaction> findByTournamentIdAndCustomerId(String tournamentId, String customerId);
+  Mono<Transaction> retrieveByReference(String reference);
   Flux<Transaction> findAll();
   Mono<Transaction> save(Transaction transaction);
   Mono<Transaction> update(Transaction transaction);

@@ -15,8 +15,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.UUID;
 
 @Log4j2
 @Component
@@ -38,13 +36,15 @@ public class TournamentHandlerV1 {
   private final FinalizeTournamentMapper finalizeTournamentMapper;
   private final RescheduleTournamentMapper rescheduleTournamentMapper;
   private final StartTournamentMapper startTournamentMapper;
-  private final String USER_ID = UUID.randomUUID().toString();
+  private final PreRegisterParticipantMapper preRegisterParticipantMapper;
+  private final String USER_ID = "recoyubCuSes3tgai";
 
   //  @PreAuthorize("hasRole('permissionGETOther')")
   public Mono<ServerResponse> register(ServerRequest serverRequest) {
     return serverRequest.bodyToMono(RegisterTournamentRequestDto.class)
       .doOnNext(log::info)
       .map(registerTournamentMapper::toTournament)
+      .map(tournament -> tournament.toBuilder().promoterId(USER_ID).build())
       .flatMap(registerTournamentUseCase::registerTournament)
       .map(registerTournamentMapper::toTournamentResponseDto)
       .doOnNext(log::info)
@@ -59,6 +59,7 @@ public class TournamentHandlerV1 {
     return serverRequest.bodyToMono(AddModTournamentRequestDto.class)
       .doOnNext(log::info)
       .map(addModTournamentMapper::toTournament)
+      .map(tournament -> tournament.toBuilder().id(serverRequest.pathVariables().get("tournamentId")).build())
       .flatMap(tournament -> addModTournamentUseCase.addMod(tournament, USER_ID))
       .map(addModTournamentMapper::toAddModTournamentResponseDto)
       .doOnNext(log::info)
@@ -106,7 +107,8 @@ public class TournamentHandlerV1 {
         serverRequest.pathVariables().get("tournamentId"),
         serverRequest.pathVariables().get("userId")
       )
-      .flatMap(response -> ServerResponse.ok().bodyValue(""));
+      .map(preRegisterParticipantMapper::toPreRegisterParticipantResponseDto)
+      .flatMap(response -> ServerResponse.ok().bodyValue(response));
   }
 
   public Mono<ServerResponse> registerParticipant(ServerRequest serverRequest) {
@@ -123,8 +125,8 @@ public class TournamentHandlerV1 {
   public Mono<ServerResponse> reschedule(ServerRequest serverRequest) {
     log.info(serverRequest);
     Tournament tournament = Tournament.builder()
-      .dateStart(LocalDate.parse(serverRequest.queryParams().get("dateStart").getFirst()))
-      .dateEnd(LocalDate.parse(serverRequest.queryParams().get("dateEnd").getFirst()))
+      .dateStart(serverRequest.queryParams().get("dateStart").getFirst())
+      .dateEnd(serverRequest.queryParams().get("dateEnd").getFirst())
       .id(serverRequest.pathVariables().get("tournamentId"))
       .build();
     serverRequest.queryParams();
