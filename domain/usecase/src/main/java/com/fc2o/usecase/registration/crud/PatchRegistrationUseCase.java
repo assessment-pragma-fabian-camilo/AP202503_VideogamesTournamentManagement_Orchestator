@@ -14,4 +14,7 @@ public class PatchRegistrationUseCase {
   public Mono<Registration> patch(Registration registration) {
     return registrationRepository.patch(registration);
   }
+  public Mono<Registration> patchByTournamentIdAndParticipantId(String tournamentId, String participantId, Registration registration) {
+    return registrationRepository.patchByTournamentIdAndParticipantId(tournamentId, participantId, registration);
+  }
 }

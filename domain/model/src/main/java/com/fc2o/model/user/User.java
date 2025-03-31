@@ -1,19 +1,18 @@
 package com.fc2o.model.user;
 import lombok.Builder;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.Set;
 
 @Builder(toBuilder = true)
 public record User(
   String id,
-  LocalDateTime createdTime,
+  String createdTime,
   String alias,
   String name,
   String email,
   String phone,
-  LocalDate birthDate,
+  String birthDate,
   Status status,
   String password,
   Set<Role> roles
@@ -39,6 +38,6 @@ public record User(
   }
 
   public Boolean isBaned() {
-    return status().equals(Status.BANED);
+    return status().equals(Status.BANNED);
   }
 }
