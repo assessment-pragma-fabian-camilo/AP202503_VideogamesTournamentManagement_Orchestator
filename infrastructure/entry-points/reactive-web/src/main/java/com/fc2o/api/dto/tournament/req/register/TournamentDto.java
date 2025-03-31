@@ -4,7 +4,7 @@ import com.fc2o.api.dto.tournament.common.*;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Map;
 
@@ -18,8 +18,8 @@ public record TournamentDto(
   Boolean isPaid,
   Short placeLimit,
   Short placeMinimum,
-  LocalDate dateStart,
-  LocalDate dateEnd,
+  String dateStart,
+  String dateEnd,
   List<TransmissionDto> transmissions,
   CommissionDto commission,
   String promoterId, //TODO: Eliminar
