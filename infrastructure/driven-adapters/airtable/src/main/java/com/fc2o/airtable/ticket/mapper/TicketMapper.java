@@ -35,7 +35,7 @@ public class TicketMapper {
                 .customerId(ticket.customerId())
                 .tournamentId(ticket.tournamentId())
                 .transactionId(ticket.transactionId())
-                .type(TypeDto.valueOf(ticket.type().name()))
+                .type(ticket.type() == null ? null : TypeDto.valueOf(ticket.type().name()))
                 .status(StatusDto.valueOf(ticket.status().name()))
                 .qr(ticket.qr())
                 .build()

@@ -7,6 +7,7 @@ import java.util.List;
 @Builder
 public record WrapperDto(
   List<RecordDto> records,
-  String offset
+  String offset,
+  Boolean typecast
 ) {
 }

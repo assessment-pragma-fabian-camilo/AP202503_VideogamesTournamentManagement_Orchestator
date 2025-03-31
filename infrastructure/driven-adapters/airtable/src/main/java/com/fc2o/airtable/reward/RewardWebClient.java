@@ -3,7 +3,6 @@ package com.fc2o.airtable.reward;
 import com.fc2o.airtable.BaseWebClient;
 import com.fc2o.airtable.reward.dto.RecordDto;
 import com.fc2o.airtable.reward.dto.WrapperDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -50,6 +49,7 @@ public class RewardWebClient {
       .uri(basePath)
       .headers(headers -> headers.setBearerAuth(bearer))
       .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just(dto), WrapperDto.class)
       .retrieve()
       .bodyToMono(WrapperDto.class);
   }
@@ -60,6 +60,7 @@ public class RewardWebClient {
       .uri(basePath)
       .headers(headers -> headers.setBearerAuth(bearer))
       .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just(dto), WrapperDto.class)
       .retrieve()
       .bodyToMono(WrapperDto.class);
   }

@@ -47,6 +47,7 @@ public class MatchMapper {
             .build()
         )
       )
+      .typecast(true)
       .build();
   }
 }

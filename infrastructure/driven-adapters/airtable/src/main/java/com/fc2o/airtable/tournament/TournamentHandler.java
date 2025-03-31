@@ -1,8 +1,5 @@
 package com.fc2o.airtable.tournament;
 
-import com.fc2o.airtable.tournament.dto.FieldsDto;
-import com.fc2o.airtable.tournament.dto.RecordDto;
-import com.fc2o.airtable.tournament.dto.WrapperDto;
 import com.fc2o.airtable.tournament.mapper.TournamentMapper;
 import com.fc2o.model.tournament.gateways.TournamentRepository;
 import com.fc2o.model.tournament.Tournament;
@@ -11,9 +8,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -71,33 +65,7 @@ public class TournamentHandler implements TournamentRepository {
   public Mono<Tournament> patchRegisterParticipant(String tournamentId, String participantId) {
     return webClient.retrieveById(tournamentId)
       .flatMap(tournament ->
-        webClient.patch(
-          WrapperDto.builder()
-            .records(
-              List.of(
-                RecordDto.builder()
-                  .id(tournamentId)
-                  .fields(
-                    FieldsDto.builder()
-                      .preRegisteredParticipantIds(
-                        tournament.fields().preRegisteredParticipantIds().stream()
-                          .filter(s -> s.equals(participantId))
-                          .collect(Collectors.toSet())
-                      )
-                      .participantIds(
-                        Stream.concat(
-                          tournament.fields().participantIds().stream(),
-                          Stream.of(participantId)).collect(Collectors.toSet()
-                        )
-                      )
-                      .placeRemaining((short) (tournament.fields().placeRemaining().intValue() - 1))
-                      .build()
-                  )
-                  .build()
-              )
-            )
-            .build()
-        )
+        webClient.patch(mapper.toRegisterWrapperDto(tournament, tournamentId, participantId))
       )
       .map(wrapper -> mapper.toTournament(wrapper.records().getFirst()));
   }
@@ -106,37 +74,7 @@ public class TournamentHandler implements TournamentRepository {
   public Mono<Tournament> patchDisqualify(String tournamentId, String participantId) {
     return webClient.retrieveById(tournamentId)
       .flatMap(tournament ->
-        webClient.patch(
-          WrapperDto.builder()
-            .records(
-              List.of(
-                RecordDto.builder()
-                  .id(tournamentId)
-                  .fields(
-                    FieldsDto.builder()
-                      .preRegisteredParticipantIds(
-                        tournament.fields().preRegisteredParticipantIds().stream()
-                          .filter(s -> s.equals(participantId))
-                          .collect(Collectors.toSet())
-                      )
-                      .participantIds(
-                        tournament.fields().participantIds().stream()
-                          .filter(s -> s.equals(participantId))
-                          .collect(Collectors.toSet())
-                      )
-                      .disqualifiedParticipantIds(
-                        Stream.concat(
-                          tournament.fields().disqualifiedParticipantIds().stream(),
-                          Stream.of(participantId)).collect(Collectors.toSet()
-                        )
-                      )
-                      .build()
-                  )
-                  .build()
-              )
-            )
-            .build()
-        )
+        webClient.patch(mapper.toDisqualifyWrapperDto(tournament, tournamentId, participantId))
       )
       .map(wrapper -> mapper.toTournament(wrapper.records().getFirst()));
   }
@@ -145,28 +83,7 @@ public class TournamentHandler implements TournamentRepository {
   public Mono<Tournament> patchPreRegisterParticipant(String tournamentId, String participantId) {
     return webClient.retrieveById(tournamentId)
       .flatMap(tournament ->
-        webClient.patch(
-          WrapperDto.builder()
-            .records(
-              List.of(
-                RecordDto.builder()
-                  .id(tournamentId)
-                  .fields(
-                    FieldsDto.builder()
-                      .preRegisteredParticipantIds(
-                        Stream.concat(
-                          tournament.fields().preRegisteredParticipantIds().stream(),
-                          Stream.of(participantId)).collect(Collectors.toSet()
-                        )
-                      )
-                      .placeRemaining((short) (tournament.fields().placeRemaining().intValue() - 1))
-                      .build()
-                  )
-                  .build()
-              )
-            )
-            .build()
-        )
+        webClient.patch(mapper.toPreRegisterWrapperDto(tournament, tournamentId, participantId))
       )
       .map(wrapper -> mapper.toTournament(wrapper.records().getFirst()));
   }
