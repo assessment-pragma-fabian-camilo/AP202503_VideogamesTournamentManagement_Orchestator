@@ -1,8 +1,10 @@
 package com.fc2o.config;
 
+import com.fc2o.model.notificationmessage.gateways.NotificationMessageRepository;
 import com.fc2o.model.tournament.Tournament;
 import com.fc2o.model.user.Role;
 import com.fc2o.model.user.User;
+import com.fc2o.service.SendNotificationService;
 import com.fc2o.service.ValidatePermissionsService;
 import com.fc2o.service.ValidateTournamentPermissionsService;
 import com.fc2o.usecase.UseCase;
@@ -76,5 +78,10 @@ public class ServicesConfig {
     RetrieveTournamentUseCase retrieveTournamentUseCase
   ) {
     return new ValidateTournamentPermissionsService(roles, retrieveUserUseCase, retrieveTournamentUseCase);
+  }
+
+  @Bean
+  public SendNotificationService sendNotificationService(NotificationMessageRepository notificationMessageRepository) {
+    return new SendNotificationService(notificationMessageRepository);
   }
 }
