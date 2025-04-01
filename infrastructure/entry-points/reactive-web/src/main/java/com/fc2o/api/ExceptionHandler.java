@@ -1,6 +1,8 @@
 package com.fc2o.api;
 
 import com.fc2o.api.dto.ErrorResponse;
+import com.netflix.discovery.shared.transport.TransportException;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 
 @Order(-2)
 @Component
+@Log4j2
 public class ExceptionHandler extends AbstractErrorWebExceptionHandler {
   public ExceptionHandler(
     ErrorAttributes errorAttributes,
@@ -33,6 +36,7 @@ public class ExceptionHandler extends AbstractErrorWebExceptionHandler {
 
   private Mono<ServerResponse> renderErrorResponse(ServerRequest serverRequest) {
     return Mono.error(getError(serverRequest))
+      .doOnError(throwable -> log.error(throwable.getMessage()))
       .onErrorResume(Exception.class, e ->
         ServerResponse
           .badRequest()
