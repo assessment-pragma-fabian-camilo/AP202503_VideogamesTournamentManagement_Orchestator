@@ -1,6 +1,7 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+	implementation project(':qr')
 	implementation project(':airtable')
 	implementation project(':reactive-web')
     implementation project(':model')
