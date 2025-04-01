@@ -1,9 +1,11 @@
 package com.fc2o.config;
 
+import com.fc2o.model.ticket.gateways.QrRepository;
 import com.fc2o.model.ticket.gateways.TicketRepository;
 import com.fc2o.service.ValidatePermissionsService;
 import com.fc2o.service.ValidateTournamentPermissionsService;
 import com.fc2o.usecase.ticket.business.BlockTicketUseCase;
+import com.fc2o.usecase.ticket.crud.CreateQrUseCase;
 import com.fc2o.usecase.ticket.business.RegisterTicketUseCase;
 import com.fc2o.usecase.ticket.crud.CreateTicketUseCase;
 import com.fc2o.usecase.ticket.crud.PatchTicketUseCase;
@@ -34,9 +36,11 @@ public class TicketUseCasesConfig {
   @Bean
   public RegisterTicketUseCase registerTicketUseCase(
     RetrieveTransactionUseCase retrieveTransactionUseCase,
-    CreateTicketUseCase createTicketUseCase
+    CreateTicketUseCase createTicketUseCase,
+    CreateQrUseCase createQrUseCase,
+    PatchTicketUseCase patchTicketUseCase
   ) {
-    return new RegisterTicketUseCase(retrieveTransactionUseCase, createTicketUseCase);
+    return new RegisterTicketUseCase(retrieveTransactionUseCase, createTicketUseCase, createQrUseCase, patchTicketUseCase);
   }
 
   @Bean
@@ -52,5 +56,10 @@ public class TicketUseCasesConfig {
   @Bean
   public RetrieveTicketUseCase retrieveTicketUseCase(TicketRepository ticketRepository) {
     return new RetrieveTicketUseCase(ticketRepository);
+  }
+
+  @Bean
+  public CreateQrUseCase createQrUseCase(QrRepository qrRepository) {
+    return new CreateQrUseCase(qrRepository);
   }
 }

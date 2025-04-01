@@ -4,7 +4,9 @@ import com.fc2o.model.ticket.Status;
 import com.fc2o.model.ticket.Ticket;
 import com.fc2o.model.ticket.Type;
 import com.fc2o.model.transaction.Transaction;
+import com.fc2o.usecase.ticket.crud.CreateQrUseCase;
 import com.fc2o.usecase.ticket.crud.CreateTicketUseCase;
+import com.fc2o.usecase.ticket.crud.PatchTicketUseCase;
 import com.fc2o.usecase.transaction.crud.RetrieveTransactionUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -14,6 +16,8 @@ public class RegisterTicketUseCase {
 
   private final RetrieveTransactionUseCase retrieveTransactionUseCase;
   private final CreateTicketUseCase createTicketUseCase;
+  private final CreateQrUseCase createQrUseCase;
+  private final PatchTicketUseCase patchTicketUseCase;
 
   /*
   * Validar que haya una transacción en estado APPROVED
@@ -32,6 +36,9 @@ public class RegisterTicketUseCase {
           .tournamentId(tournamentId)
           .build()
       )
-      .flatMap(createTicketUseCase::create);
+      .flatMap(createTicketUseCase::create)
+      .zipWhen(ticket -> createQrUseCase.retrieve(ticket.id()))
+      .map(objects -> objects.getT1().toBuilder().qr(objects.getT2()).build())
+      .flatMap(patchTicketUseCase::patch);
   }
 }

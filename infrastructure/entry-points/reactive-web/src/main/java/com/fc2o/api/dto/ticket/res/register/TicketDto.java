@@ -13,6 +13,7 @@ public record TicketDto(
   String tournamentId,
   String transactionId,
   StatusDto status,
-  TypeDto type
+  TypeDto type,
+  String qr
 ) {
 }
