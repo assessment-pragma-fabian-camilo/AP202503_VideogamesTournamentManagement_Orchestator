@@ -1,10 +1,12 @@
 package com.fc2o.usecase.tournament.business;
 
+import com.fc2o.model.notificationmessage.NotificationMessage;
 import com.fc2o.model.tournament.Commission;
 import com.fc2o.model.tournament.Price;
 import com.fc2o.model.tournament.Status;
 import com.fc2o.model.tournament.Tournament;
 import com.fc2o.model.user.User;
+import com.fc2o.service.SendNotificationService;
 import com.fc2o.service.ValidatePermissionsService;
 import com.fc2o.usecase.tournament.crud.CreateTournamentUseCase;
 import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
@@ -30,6 +32,7 @@ public class RegisterTournamentUseCase {
   private final RetrieveTournamentUseCase retrieveTournamentUseCase;
   private final CreateTournamentUseCase createTournamentUseCase;
   private final ValidatePermissionsService permissionsService;
+  private final SendNotificationService sendNotificationService;
   private final Short maxFreeTournaments;
 
   public Mono<Tournament> registerTournament(Tournament tournament) {
@@ -67,6 +70,21 @@ public class RegisterTournamentUseCase {
             )
             .flatMap(createTournamentUseCase::create)
       )
-      .switchIfEmpty(createTournamentUseCase.create(tournament.toBuilder().status(Status.NOT_STARTED).build()));
+      .switchIfEmpty(createTournamentUseCase.create(tournament.toBuilder().status(Status.NOT_STARTED).build()))
+      .doOnNext(t -> sendNotificationService.send(buildNotificationMessage(userAtomicReference.get(), t)))
+      ;
+  }
+  private NotificationMessage buildNotificationMessage(User user, Tournament tournament) {
+    return NotificationMessage.builder()
+      .to(user.email())
+      .subject("¡Creación exitosa de Torneo!")
+      .body(
+        """
+          <h1>¡Creación exitosa de Torneo!</h1>
+          <h2>Apreciado usuario <strong>%s</strong></h2>
+          <p>Es de nuestro agrado informarle que el torneo <strong>[%s]</strong> se registró de manera exitosa.</p>
+          """.formatted(user.alias(), tournament.name())
+      )
+      .build();
   }
 }

@@ -1,6 +1,7 @@
 package com.fc2o.config;
 
 import com.fc2o.model.tournament.gateways.TournamentRepository;
+import com.fc2o.service.SendNotificationService;
 import com.fc2o.service.ValidatePermissionsService;
 import com.fc2o.service.ValidateTournamentPermissionsService;
 import com.fc2o.usecase.match.business.CancelMatchUseCase;
@@ -142,6 +143,7 @@ public class TournamentUseCasesConfig {
     RetrieveTournamentUseCase retrieveTournamentUseCase,
     CreateTournamentUseCase createTournamentUseCase,
     ValidatePermissionsService permissionsService,
+    SendNotificationService sendNotificationService,
     @Value("${tournament.max-free-tournaments}") Short maxFreeTournaments
   ) {
     return new RegisterTournamentUseCase(
@@ -149,6 +151,7 @@ public class TournamentUseCasesConfig {
       retrieveTournamentUseCase,
       createTournamentUseCase,
       permissionsService,
+      sendNotificationService,
       maxFreeTournaments
     );
   }
