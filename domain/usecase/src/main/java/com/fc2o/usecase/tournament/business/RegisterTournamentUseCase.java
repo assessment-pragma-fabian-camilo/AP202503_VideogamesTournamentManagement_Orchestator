@@ -71,7 +71,7 @@ public class RegisterTournamentUseCase {
             .flatMap(createTournamentUseCase::create)
       )
       .switchIfEmpty(createTournamentUseCase.create(tournament.toBuilder().status(Status.NOT_STARTED).build()))
-      //.doOnNext(t -> sendNotificationService.send(buildNotificationMessage(userAtomicReference.get(), t)))
+      .doOnNext(t -> sendNotificationService.send(buildNotificationMessage(userAtomicReference.get(), t)))
       ;
   }
   private NotificationMessage buildNotificationMessage(User user, Tournament tournament) {
