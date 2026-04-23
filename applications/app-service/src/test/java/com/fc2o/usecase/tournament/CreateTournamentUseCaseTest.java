@@ -4,7 +4,6 @@ import com.fc2o.model.tournament.Tournament;
 import com.fc2o.model.tournament.gateways.TournamentRepository;
 import com.fc2o.model.game.gateways.GameRepository;
 import com.fc2o.model.user.gateways.UserRepository;
-import com.fc2o.model.user.User;
 import com.fc2o.model.game.Game;
 import com.fc2o.usecase.fixture.TournamentFixture;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**

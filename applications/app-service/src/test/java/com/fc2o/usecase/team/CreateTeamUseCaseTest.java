@@ -3,7 +3,6 @@ package com.fc2o.usecase.team;
 import com.fc2o.model.team.Team;
 import com.fc2o.model.team.gateways.TeamRepository;
 import com.fc2o.model.team.gateways.TeamMemberRepository;
-import com.fc2o.model.user.User;
 import com.fc2o.model.user.gateways.UserRepository;
 import com.fc2o.usecase.fixture.TeamFixture;
 import org.junit.jupiter.api.BeforeEach;

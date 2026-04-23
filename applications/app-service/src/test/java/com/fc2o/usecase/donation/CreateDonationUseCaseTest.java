@@ -5,7 +5,6 @@ import com.fc2o.model.donation.gateways.DonationRepository;
 import com.fc2o.model.tournament.gateways.TournamentRepository;
 import com.fc2o.model.user.gateways.UserRepository;
 import com.fc2o.model.tournament.Tournament;
-import com.fc2o.model.user.User;
 import com.fc2o.usecase.fixture.TournamentFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
