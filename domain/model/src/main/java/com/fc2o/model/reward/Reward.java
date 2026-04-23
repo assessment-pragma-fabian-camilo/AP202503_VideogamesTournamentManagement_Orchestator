@@ -1,15 +1,22 @@
 package com.fc2o.model.reward;
-import lombok.Builder;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import lombok.Builder;
 
 @Builder(toBuilder = true)
 public record Reward(
-  String id,
-  String createdTime,
-  Map<Byte, String> standings,
-  Map<String, BigDecimal> prizePerStanding,
-  String tournamentId
+        String id,
+        String createdAt,
+        String tournamentId,
+        String teamId,
+        Short position,
+        Double prize
 ) {
+
+    public boolean hasTeam() {
+        return teamId != null;
+    }
+
+    public boolean hasPrize() {
+        return prize != null;
+    }
 }

@@ -1,59 +1,50 @@
 package com.fc2o.model.tournament;
+
+import com.fc2o.model.shared.CommissionType;
+import com.fc2o.model.shared.TournamentStatus;
 import lombok.Builder;
-import lombok.Singular;
-
-import java.math.BigDecimal;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Builder(toBuilder = true)
 public record Tournament(
-  String id,
-  String createdTime,
-  String name,
-  String ruleset,
-  String promoterId,
-  String gameId,
-  Map<Byte, BigDecimal> prizePerPosition,
-  Boolean isPaid,
-  Status status,
-  Short placeLimit,
-  Short placeRemaining,
-  Short placeMinimum,
-  String dateStart,
-  String dateEnd,
-  List<Transmission> transmissions,
-  Commission commission,
-  @Singular
-  Set<String> preRegisteredParticipantIds,
-  @Singular
-  Set<String> participantIds,
-  @Singular
-  Set<String> disqualifiedParticipantIds,
-  @Singular
-  Set<String> moderatorIds,
-  Price price,
-  String closedTournamentJustification
+        String id,
+        String createdAt,
+        String name,
+        String rules,
+        String promoterUserId,
+        String gameId,
+        Short placeLimit,
+        Short placeRemaining,
+        Short placeMinimum,
+        String dateStart,
+        String dateEnd,
+        Double participationPrice,
+        Double visualizationPrice,
+        CommissionType type,
+        TournamentStatus status,
+        String description
 ) {
-  public Boolean isNotStarted() {
-    return status().equals(Status.NOT_STARTED);
-  }
 
-  public Boolean isInProgress() {
-    return status().equals(Status.IN_PROGRESS);
-  }
+    public Boolean isPaid() {
+        return type == CommissionType.PAID;
+    }
 
-  public Boolean isFinished() {
-    return status().equals(Status.FINISHED);
-  }
+    public Boolean isFree() {
+        return type == CommissionType.FREE;
+    }
 
-  public Boolean isCanceled() {
-    return status().equals(Status.CANCELED);
-  }
+    public Boolean isUpcoming() {
+        return status == TournamentStatus.UPCOMING;
+    }
 
-  public Boolean isFree() {
-    return !isPaid();
-  }
+    public Boolean isOngoing() {
+        return status == TournamentStatus.ONGOING;
+    }
+
+    public Boolean isCompleted() {
+        return status == TournamentStatus.COMPLETED;
+    }
+
+    public Boolean isCanceled() {
+        return status == TournamentStatus.CANCELED;
+    }
 }
