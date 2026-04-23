@@ -20,3 +20,5 @@ include ':airtable'
 project(':airtable').projectDir = file('./infrastructure/driven-adapters/airtable')
 include ':qr'
 project(':qr').projectDir = file('./infrastructure/driven-adapters/qr')
+include ':email-sender'
+project(':email-sender').projectDir = file('./infrastructure/driven-adapters/email-sender')

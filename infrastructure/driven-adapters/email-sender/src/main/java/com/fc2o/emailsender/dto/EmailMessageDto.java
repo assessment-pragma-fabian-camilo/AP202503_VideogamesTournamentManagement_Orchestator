@@ -4,8 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record EmailMessageDto(
-        String to,
-        String subject,
-        String body
+  String to,
+  String subject,
+  String body
 ) {
 }
