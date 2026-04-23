@@ -15,7 +15,7 @@ public class MatchRouterV1 {
   public RouterFunction<ServerResponse> matchRouterFunction(MatchHandlerV1 handlerV1) {
     return RouterFunctions
       .route()
-      .path("/api/v1",
+      .path("/api/v1/orchestrator",
         builder -> builder
           .POST("/tournaments/{tournamentId}/matches", handlerV1::register)
           .PATCH("/tournaments/{tournamentId}/matches/{matchId}/cancel", handlerV1::cancel)

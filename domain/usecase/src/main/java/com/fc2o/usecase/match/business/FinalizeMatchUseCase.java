@@ -9,7 +9,9 @@ import com.fc2o.usecase.tournament.TournamentUseCases;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 @RequiredArgsConstructor
 public class FinalizeMatchUseCase {
@@ -34,7 +36,12 @@ public class FinalizeMatchUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("La partida aún no empieza")))
       .filter(match -> match.participantIds().contains(winnerId))
       .switchIfEmpty(Mono.error(new RuntimeException("El ganador no está registrado en esta partida")))
-      .map(match -> match.toBuilder().status(Status.FINISHED).timeEnd(LocalDateTime.now()).winnerId(winnerId).build())
+      .map(match -> match.toBuilder()
+        .status(Status.FINISHED)
+        .timeEnd(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        .winnerId(winnerId)
+        .build()
+      )
       .flatMap(patchMatchUseCase::patch);
   }
 }

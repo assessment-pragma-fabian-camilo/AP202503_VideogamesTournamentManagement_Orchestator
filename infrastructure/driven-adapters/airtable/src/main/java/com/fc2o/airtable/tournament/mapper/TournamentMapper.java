@@ -1,20 +1,35 @@
 package com.fc2o.airtable.tournament.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fc2o.airtable.tournament.dto.*;
 import com.fc2o.model.tournament.*;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TournamentMapper {
 
   public Tournament toTournament(RecordDto dto) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<Byte, BigDecimal> pricePerPosition = new HashMap<>();
+    List<TransmissionDto> transmissions = new ArrayList<>();
+    try {
+      pricePerPosition = objectMapper.readValue(dto.fields().prizePerPosition(), new TypeReference<Map<Byte, BigDecimal>>() {});
+      transmissions = objectMapper.readValue(dto.fields().transmissions(), new TypeReference<List<TransmissionDto>>() {});
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
     return Tournament.builder()
       .createdTime(dto.createdTime())
       .id(dto.id())
       .name(dto.fields().name())
-      .isPaid(dto.fields().isPaid())
+      .isPaid(dto.fields().isPaid() != null && dto.fields().isPaid())
       .status(Status.valueOf(dto.fields().status().name()))
       .placeLimit(dto.fields().placeLimit())
       .placeRemaining(dto.fields().placeRemaining())
@@ -22,11 +37,11 @@ public class TournamentMapper {
       .promoterId(dto.fields().promoterId())
       .ruleset(dto.fields().ruleset())
       .gameId(dto.fields().gameId())
-      .prizePerPosition(dto.fields().prizePerPosition())
+      .prizePerPosition(pricePerPosition)
       .dateStart(dto.fields().dateStart())
       .dateEnd(dto.fields().dateEnd())
       .transmissions(
-        dto.fields().transmissions().stream()
+        transmissions.stream()
           .map(transmission ->
             Transmission.builder()
               .url(transmission.url())
@@ -37,7 +52,7 @@ public class TournamentMapper {
       )
       .commission(
         Commission.builder()
-          .DonationPercentage(dto.fields().commissionDonationPercentage())
+          .donationPercentage(dto.fields().commissionDonationPercentage())
           .participationPercentage(dto.fields().commissionParticipationPercentage())
           .visualizationPercentage(dto.fields().commissionVisualizationPercentage())
           .build()
@@ -48,15 +63,32 @@ public class TournamentMapper {
           .visualization(dto.fields().priceVisualization())
           .build()
       )
-      .preRegisteredParticipantIds(dto.fields().preRegisteredParticipantIds())
-      .participantIds(dto.fields().participantIds())
-      .disqualifiedParticipantIds(dto.fields().disqualifiedParticipantIds())
-      .moderatorIds(dto.fields().moderatorIds())
+      .preRegisteredParticipantIds(
+        dto.fields().preRegisteredParticipantIds() == null ? List.of() : dto.fields().preRegisteredParticipantIds()
+      )
+      .participantIds(
+        dto.fields().participantIds() == null ? List.of() : dto.fields().participantIds()
+      )
+      .disqualifiedParticipantIds(
+        dto.fields().disqualifiedParticipantIds() == null ? List.of() : dto.fields().disqualifiedParticipantIds()
+      )
+      .moderatorIds(
+        dto.fields().moderatorIds() == null ? List.of() : dto.fields().moderatorIds()
+      )
       .closedTournamentJustification(dto.fields().closedTournamentJustification())
       .build();
   }
 
   public WrapperDto toWrapperDto(Tournament tournament) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String pricePerPosition = "";
+    String transmissions = "";
+    try {
+      pricePerPosition = objectMapper.writeValueAsString(tournament.prizePerPosition());
+      transmissions = objectMapper.writeValueAsString(tournament.transmissions());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
     return WrapperDto.builder()
       .records(
         List.of(
@@ -73,20 +105,11 @@ public class TournamentMapper {
                 .promoterId(tournament.promoterId())
                 .ruleset(tournament.ruleset())
                 .gameId(tournament.gameId())
-                .prizePerPosition(tournament.prizePerPosition())
+                .prizePerPosition(pricePerPosition)
                 .dateStart(tournament.dateStart())
                 .dateEnd(tournament.dateEnd())
-                .transmissions(
-                  tournament.transmissions().stream()
-                    .map(transmission ->
-                      TransmissionDto.builder()
-                        .url(transmission.url())
-                        .platform(PlatformDto.valueOf(transmission.platform().name()))
-                        .build()
-                    )
-                    .toList()
-                )
-                .commissionDonationPercentage(tournament.commission().DonationPercentage())
+                .transmissions(transmissions)
+                .commissionDonationPercentage(tournament.commission().donationPercentage())
                 .commissionVisualizationPercentage(tournament.commission().visualizationPercentage())
                 .commissionParticipationPercentage(tournament.commission().participationPercentage())
                 .priceParticipation(tournament.price().participation())
@@ -101,6 +124,99 @@ public class TournamentMapper {
             .build()
         )
       )
+      .typecast(true)
+      .build();
+  }
+
+  public WrapperDto toPreRegisterWrapperDto(RecordDto tournament, String tournamentId, String participantId) {
+    return WrapperDto.builder()
+      .records(
+        List.of(
+          RecordDto.builder()
+            .id(tournamentId)
+            .fields(
+              FieldsDto.builder()
+                .preRegisteredParticipantIds(
+                  Stream.concat(
+                      Stream.ofNullable(tournament.fields().preRegisteredParticipantIds())
+                        .flatMap(Collection::stream),
+                      Stream.of(participantId)
+                    )
+                    .collect(Collectors.toSet())
+                )
+                .placeRemaining((short) (tournament.fields().placeRemaining().intValue() - 1))
+                .build()
+            )
+            .build()
+        )
+      )
+      .typecast(true)
+      .build();
+  }
+
+  public WrapperDto toDisqualifyWrapperDto(RecordDto tournament, String tournamentId, String participantId) {
+    return WrapperDto.builder()
+      .records(
+        List.of(
+          RecordDto.builder()
+            .id(tournamentId)
+            .fields(
+              FieldsDto.builder()
+                .preRegisteredParticipantIds(
+                  Stream.ofNullable(tournament.fields().preRegisteredParticipantIds())
+                    .flatMap(Collection::stream)
+                    .filter(s -> !s.equals(participantId))
+                    .collect(Collectors.toSet())
+                )
+                .participantIds(
+                  Stream.ofNullable(tournament.fields().participantIds())
+                    .flatMap(Collection::stream)
+                    .filter(s -> !s.equals(participantId))
+                    .collect(Collectors.toSet())
+                )
+                .disqualifiedParticipantIds(
+                  Stream.concat(
+                    Stream.ofNullable(tournament.fields().disqualifiedParticipantIds())
+                      .flatMap(Collection::stream),
+                    Stream.of(participantId)).collect(Collectors.toSet()
+                  )
+                )
+                .build()
+            )
+            .build()
+        )
+      )
+      .typecast(true)
+      .build();
+  }
+
+  public WrapperDto toRegisterWrapperDto(RecordDto tournament, String tournamentId, String participantId) {
+    return WrapperDto.builder()
+      .records(
+        List.of(
+          RecordDto.builder()
+            .id(tournamentId)
+            .fields(
+              FieldsDto.builder()
+                .preRegisteredParticipantIds(
+                  Stream.ofNullable(tournament.fields().preRegisteredParticipantIds())
+                    .flatMap(Collection::stream)
+                    .filter(s -> !s.equals(participantId))
+                    .collect(Collectors.toSet())
+                )
+                .participantIds(
+                  Stream.concat(
+                    Stream.ofNullable(tournament.fields().participantIds())
+                      .flatMap(Collection::stream),
+                    Stream.of(participantId)).collect(Collectors.toSet()
+                  )
+                )
+                .build()
+            )
+            .build()
+        )
+      )
+      .typecast(true)
       .build();
   }
 }

@@ -3,8 +3,7 @@ import lombok.Builder;
 import lombok.Singular;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +11,7 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public record Tournament(
   String id,
+  String createdTime,
   String name,
   String ruleset,
   String promoterId,
@@ -22,9 +22,8 @@ public record Tournament(
   Short placeLimit,
   Short placeRemaining,
   Short placeMinimum,
-  LocalDate dateStart,
-  LocalDate dateEnd,
-  LocalDateTime createdTime,
+  String dateStart,
+  String dateEnd,
   List<Transmission> transmissions,
   Commission commission,
   @Singular

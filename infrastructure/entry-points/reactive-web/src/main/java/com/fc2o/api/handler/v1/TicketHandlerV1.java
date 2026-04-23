@@ -26,13 +26,11 @@ public class TicketHandlerV1 {
   //  @PreAuthorize("hasRole('permissionGETOther')")
   public Mono<ServerResponse> register(ServerRequest serverRequest) {
     log.info(serverRequest);
-    return Mono.just(serverRequest.queryParams())
-      .filter(map -> map.get("type").contains("PARTICIPATION"))
-      .flatMap(map ->
-        registerTicketUseCase.registerParticipationTicket(
-          serverRequest.pathVariables().get("tournamentId"),
-          serverRequest.pathVariables().get("userId")
-        )
+    return registerTicketUseCase
+      .registerTicket(
+        serverRequest.pathVariables().get("tournamentId"),
+        serverRequest.pathVariables().get("userId"),
+        serverRequest.queryParams().get("reference").getFirst()
       )
       .map(registerTicketMapper::toRegisterTicketResponseDto)
       .doOnNext(log::info)

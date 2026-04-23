@@ -8,6 +8,7 @@ import lombok.Builder;
 @Builder
 public record TournamentDto(
   String id,
+  String createdTime,
   StatusDto status
 ) {
 }

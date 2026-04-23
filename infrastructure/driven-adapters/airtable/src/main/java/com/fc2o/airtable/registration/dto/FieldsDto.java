@@ -1,6 +1,5 @@
 package com.fc2o.airtable.registration.dto;
 
-import com.fc2o.model.registration.Status;
 import lombok.Builder;
 
 @Builder

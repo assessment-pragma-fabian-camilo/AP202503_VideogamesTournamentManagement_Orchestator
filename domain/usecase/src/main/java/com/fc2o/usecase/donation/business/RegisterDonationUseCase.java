@@ -6,7 +6,6 @@ import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 public class RegisterDonationUseCase {
@@ -19,7 +18,7 @@ public class RegisterDonationUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(tournament -> !tournament.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .map(tournament -> donation.toBuilder().createdTime(LocalDateTime.now()).build())
+      .map(tournament -> donation.toBuilder().build())
       .flatMap(createDonationUseCase::create);
   }
 }

@@ -15,7 +15,7 @@ public class TournamentRouterV1 {
   public RouterFunction<ServerResponse> tournamentRouterFunction(TournamentHandlerV1 handlerV1) {
     return RouterFunctions
       .route()
-      .path("/api/v1/tournaments",
+      .path("/api/v1/orchestrator/tournaments",
         builder -> builder
           .POST("", handlerV1::register)
           .POST("/{tournamentId}/moderators", handlerV1::addMod)
@@ -24,8 +24,8 @@ public class TournamentRouterV1 {
           .PATCH("/{tournamentId}/finalize", handlerV1::finalize)
           .POST("/{tournamentId}/users/{userId}/pre-register", handlerV1::preRegisterParticipant)
           .POST("/{tournamentId}/users/{userId}/tickets/{ticketId}/register", handlerV1::registerParticipant)
-          .PATCH("/{tournamentId}/users/reschedule", handlerV1::reschedule)
-          .PATCH("/{tournamentId}/users/start", handlerV1::start)
+          .PATCH("/{tournamentId}/reschedule", handlerV1::reschedule)
+          .PATCH("/{tournamentId}/start", handlerV1::start)
       )
       .build();
   }

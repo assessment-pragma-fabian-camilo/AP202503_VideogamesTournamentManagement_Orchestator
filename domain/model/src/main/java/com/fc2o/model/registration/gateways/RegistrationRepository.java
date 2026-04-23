@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 public interface RegistrationRepository {
   Mono<Registration> findById(String id);
+  Mono<Registration> patchByTournamentIdAndParticipantId(String tournamentId, String participantId, Registration registration);
   Flux<Registration> findAll();
   Mono<Registration> save(Registration registration);
   Mono<Registration> update(Registration registration);

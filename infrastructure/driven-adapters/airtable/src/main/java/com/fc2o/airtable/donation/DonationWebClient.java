@@ -49,6 +49,7 @@ public class DonationWebClient {
       .uri(basePath)
       .headers(headers -> headers.setBearerAuth(bearer))
       .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just(dto), WrapperDto.class)
       .retrieve()
       .bodyToMono(WrapperDto.class);
   }
@@ -59,6 +60,7 @@ public class DonationWebClient {
       .uri(basePath)
       .headers(headers -> headers.setBearerAuth(bearer))
       .contentType(MediaType.APPLICATION_JSON)
+      .body(Mono.just(dto), WrapperDto.class)
       .retrieve()
       .bodyToMono(WrapperDto.class);
   }

@@ -22,8 +22,8 @@ public class AddModTournamentUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(t -> !t.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.ADD_MOD))
-      .filter(t -> t.moderatorIds().size() + tournament.moderatorIds().size() < maxModerators)
+      .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.ADD_MOD).subscribe())
+      .filter(t -> t.moderatorIds().size() + tournament.moderatorIds().size() <= maxModerators)
       .switchIfEmpty(
         Mono.error(new RuntimeException(String.format("La cantidad de moderadores no puede ser mayor a %d", maxModerators)))
       )

@@ -1,12 +1,11 @@
 package com.fc2o.model.registration;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 public record Registration(
   String id,
-  LocalDateTime createdTime,
+  String createdTime,
   String tournamentId,
   String participantId,
   Status status

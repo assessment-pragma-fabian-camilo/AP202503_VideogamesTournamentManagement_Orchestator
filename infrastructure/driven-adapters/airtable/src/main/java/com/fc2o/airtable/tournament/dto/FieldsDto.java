@@ -2,12 +2,9 @@ package com.fc2o.airtable.tournament.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Singular;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+
 import java.util.Set;
 
 @Builder
@@ -21,10 +18,10 @@ public record FieldsDto(
   Short placeLimit,
   Short placeRemaining,
   Short placeMinimum,
-  LocalDate dateStart,
-  LocalDate dateEnd,
-  Map<Byte, BigDecimal> prizePerPosition,
-  List<TransmissionDto> transmissions,
+  String dateStart,
+  String dateEnd,
+  String prizePerPosition,
+  String transmissions,
   Set<String> preRegisteredParticipantIds,
   Set<String> participantIds,
   Set<String> disqualifiedParticipantIds,

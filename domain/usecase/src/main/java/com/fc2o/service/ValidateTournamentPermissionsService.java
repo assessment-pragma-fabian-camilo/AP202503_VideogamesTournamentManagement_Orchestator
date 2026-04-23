@@ -28,19 +28,12 @@ public class ValidateTournamentPermissionsService extends ValidatePermissionsSer
     this.retrieveTournamentUseCase = retrieveTournamentUseCase;
   }
 
-  public void validate(String tournamentId, String userId, TournamentUseCases tournamentUseCases) {
+  public Mono<Void> validate(String tournamentId, String userId, TournamentUseCases tournamentUseCases) {
     super.validate(userId, super.roles.get(Tournament.class).get(tournamentUseCases));
 
     Mono<Tournament> tournamentMono = retrieveTournamentUseCase.retrieveById(tournamentId);
 
-    super.validatorRoles
-      .get(Role.PROMOTER)
-      .put(Tournament.class, tournament -> ((Tournament) tournament).promoterId().equals(userId));
-    super.validatorRoles
-      .get(Role.MODERATOR)
-      .put(Tournament.class, tournament -> ((Tournament) tournament).moderatorIds().contains(userId));
-
-    Flux.fromIterable(super.roles.get(Tournament.class).get(tournamentUseCases))
+    return Flux.fromIterable(super.roles.get(Tournament.class).get(tournamentUseCases))
       .flatMap(role -> tournamentMono.map(validatorRoles.get(role).get(Tournament.class)))
       .filter(hasRole -> hasRole)
       .singleOrEmpty()

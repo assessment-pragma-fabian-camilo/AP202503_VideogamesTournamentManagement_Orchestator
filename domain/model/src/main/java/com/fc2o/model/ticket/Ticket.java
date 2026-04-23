@@ -1,12 +1,11 @@
 package com.fc2o.model.ticket;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 public record Ticket(
   String id,
-  LocalDateTime createdTime,
+  String createdTime,
   String customerId,
   String tournamentId,
   String transactionId,

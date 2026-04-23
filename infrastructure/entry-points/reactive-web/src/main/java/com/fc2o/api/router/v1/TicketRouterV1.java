@@ -15,7 +15,7 @@ public class TicketRouterV1 {
   public RouterFunction<ServerResponse> ticketRouterFunction(TicketHandlerV1 handlerV1) {
     return RouterFunctions
       .route()
-      .path("/api/v1",
+      .path("/api/v1/orchestrator",
         builder -> builder
           .POST("/tournaments/{tournamentId}/users/{userId}/tickets", handlerV1::register)
           .PATCH("/users/{userId}/tickets/{ticketId}/block", handlerV1::block)

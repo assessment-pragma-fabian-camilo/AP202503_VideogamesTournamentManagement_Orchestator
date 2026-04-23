@@ -2,12 +2,11 @@ package com.fc2o.airtable.game.dto;
 
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 
 @Builder
 public record RecordDto(
   String id,
-  LocalDateTime createdTime,
+  String createdTime,
   FieldsDto fields
 ) {
 }

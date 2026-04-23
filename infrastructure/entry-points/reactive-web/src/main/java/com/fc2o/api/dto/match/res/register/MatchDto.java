@@ -3,7 +3,7 @@ package com.fc2o.api.dto.match.res.register;
 import com.fc2o.api.dto.match.common.StatusDto;
 import lombok.Builder;
 
-import java.time.LocalDate;
+
 import java.util.Set;
 
 
@@ -12,7 +12,7 @@ public record MatchDto(
   String id,
   Set<String> participantIds,
   String tournamentId,
-  LocalDate dateStart,
+  String dateStart,
   StatusDto status
 ) {
 }

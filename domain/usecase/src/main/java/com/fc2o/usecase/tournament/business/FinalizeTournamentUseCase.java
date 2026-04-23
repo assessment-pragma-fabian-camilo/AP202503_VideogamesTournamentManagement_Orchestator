@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 @RequiredArgsConstructor
 public class FinalizeTournamentUseCase {
@@ -42,7 +44,7 @@ public class FinalizeTournamentUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(tournament -> !tournament.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .filter(tournament -> tournament.dateEnd().isAfter(LocalDate.now()))
+      .filter(tournament -> LocalDate.parse(tournament.dateEnd()).isAfter(LocalDate.now()))
       .switchIfEmpty(Mono.error(new RuntimeException("Aún no se llega a la fecha de finalización del torneo")))
       .map(tournament -> tournament.toBuilder().status(Status.FINISHED).build())
       .doOnNext(tournament ->
@@ -63,7 +65,11 @@ public class FinalizeTournamentUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(tournament -> !tournament.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .map(tournament -> tournament.toBuilder().status(Status.FINISHED).dateEnd(LocalDate.now()).build())
+      .map(tournament -> tournament.toBuilder()
+        .status(Status.FINISHED)
+        .dateEnd(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+        .build()
+      )
       .doOnNext(tournament -> cancelMatchUseCase.cancelAllMatchesByTournamentId(tournamentId))
       .doOnNext(tournament -> registerRewardUseCase.registerReward(reward, tournament))
       .flatMap(patchTournamentUseCase::patch);

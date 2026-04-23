@@ -1,15 +1,14 @@
 package com.fc2o.model.transaction;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
 
 @Builder(toBuilder = true)
 public record Transaction(
   String id,
+  String createdTime,
   String customerId,
   String tournamentId,
   Status status,
-  LocalDateTime createdTime,
   PaymentMethod paymentMethod,
   String reference,
   Type type

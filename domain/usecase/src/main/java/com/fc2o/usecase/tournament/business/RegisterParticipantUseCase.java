@@ -31,14 +31,14 @@ public class RegisterParticipantUseCase {
   private final RetrieveUserUseCase retrieveUserUseCase;
 
   /*
-  * Validar que el torneo esté en estado NOT_STARTED
-  * Validar que exista una transacción válida para este torneo:
-  *   - que el tipo de ticket sea para participante
-  * Validar que la transacción tenga status APPROVED -> Esto debe estar validado para generar el ticket
-  * Validar que el status del ticket no sea USED ni BLOCKED (NEW)
-  * Actualizar tournament para quitar al pre-inscrito y ponerlo como participante
-  * Actualizar el estado del ticket a USED
-  * Crear el registro Registration
+   * Validar que el torneo esté en estado NOT_STARTED
+   * Validar que exista una transacción válida para este torneo:
+   *   - que el tipo de ticket sea para participante
+   * Validar que la transacción tenga status APPROVED -> Esto debe estar validado para generar el ticket
+   * Validar que el status del ticket no sea USED ni BLOCKED (NEW)
+   * Actualizar tournament para quitar al pre-inscrito y ponerlo como participante
+   * Actualizar el estado del ticket a USED
+   * Crear el registro Registration
    */
 
   public Mono<Tournament> registerParticipant(String ticketId, String participantId, String tournamentId) {
@@ -68,9 +68,14 @@ public class RegisterParticipantUseCase {
         patchTournamentUseCase.patchRegisterParticipant(tournamentId, participantId)
       )
       .doOnNext(tournament ->
-        patchRegistrationUseCase.patch(Registration.builder().status(com.fc2o.model.registration.Status.APPROVED).build())
+        patchRegistrationUseCase.patchByTournamentIdAndParticipantId(
+            tournamentId,
+            participantId,
+            Registration.builder().status(com.fc2o.model.registration.Status.APPROVED).build()
+          )
+          .subscribe()
       )
-      .doOnNext(ticket -> patchTicketUseCase.patch(Ticket.builder().status(Status.USED).build()));
+      .doOnNext(ticket -> patchTicketUseCase.patch(Ticket.builder().id(ticketId).status(Status.USED).build()).subscribe());
   }
 
   public Mono<Tournament> forceRegisterParticipant(String ticketId, String userId) {

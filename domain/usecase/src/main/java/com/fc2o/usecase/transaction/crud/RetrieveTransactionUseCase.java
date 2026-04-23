@@ -18,5 +18,8 @@ public class RetrieveTransactionUseCase {
   public Mono<Transaction> retrieveByTournamentIdAndCustomerId(String tournamentId, String customerId) {
     return transactionRepository.findByTournamentIdAndCustomerId(tournamentId, customerId);
   }
+  public Mono<Transaction> retrieveByReference(String reference) {
+    return transactionRepository.retrieveByReference(reference);
+  }
 
 }

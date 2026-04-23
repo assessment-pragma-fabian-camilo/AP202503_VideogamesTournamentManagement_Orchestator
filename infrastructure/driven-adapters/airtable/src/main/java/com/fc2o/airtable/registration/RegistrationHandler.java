@@ -22,6 +22,20 @@ public class RegistrationHandler implements RegistrationRepository {
   }
 
   @Override
+  public Mono<Registration> patchByTournamentIdAndParticipantId(String tournamentId, String participantId, Registration registration) {
+    return webClient
+      .retrieveAll()
+      .flatMapMany(wrapper -> Flux.fromIterable(wrapper.records()))
+      .filter(record -> record.fields().tournamentId().equals(tournamentId))
+      .filter(record -> record.fields().participantId().equals(participantId))
+      .singleOrEmpty()
+      .map(record -> registration.toBuilder().id(record.id()).build())
+      .map(mapper::toWrapperDto)
+      .flatMap(webClient::patch)
+      .map(dto -> mapper.toRegistration(dto.records().getFirst()));
+  }
+
+  @Override
   public Flux<Registration> findAll() {
     return webClient.retrieveAll()
       .flatMapMany(dto -> Flux.fromIterable(dto.records()))
