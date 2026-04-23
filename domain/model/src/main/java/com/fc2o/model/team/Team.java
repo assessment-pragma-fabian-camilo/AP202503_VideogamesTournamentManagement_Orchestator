@@ -1,16 +1,13 @@
 package com.fc2o.model.team;
-
 import lombok.Builder;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record Team(
-        String id,
-        String createdAt,
-        String name,
-        String leaderUserId
+  UUID id,
+  String name,
+  LocalDateTime createdTime
 ) {
-    public boolean isLeader(String userId) {
-        return leaderUserId != null && leaderUserId.equals(userId);
-    }
 }
-

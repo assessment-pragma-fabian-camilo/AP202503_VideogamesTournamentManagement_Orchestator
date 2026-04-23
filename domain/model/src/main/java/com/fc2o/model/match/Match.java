@@ -1,36 +1,18 @@
 package com.fc2o.model.match;
-
-import com.fc2o.model.shared.MatchStatus;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record Match(
-        String id,
-        String createdAt,
-        String startDateTime,
-        String endDateTime,
-        String tournamentId,
-        String winnerTeamId,
-        MatchStatus status,
-        String matchDetails,
-        Set<String> participantIds
+  UUID id,
+  Set<UUID> teamIds,
+  UUID winnerTeamId,
+  UUID tournamentId,
+  LocalDateTime timeStart,
+  LocalDateTime timeEnd,
+  Status status
 ) {
-
-    public Boolean isScheduled() {
-        return status == MatchStatus.SCHEDULED;
-    }
-
-    public Boolean isOngoing() {
-        return status == MatchStatus.ONGOING;
-    }
-
-    public Boolean isCompleted() {
-        return status == MatchStatus.COMPLETED;
-    }
-
-    public Boolean isCanceled() {
-        return status == MatchStatus.CANCELED;
-    }
 }
