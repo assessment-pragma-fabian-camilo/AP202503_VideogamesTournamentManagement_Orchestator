@@ -1,0 +1,338 @@
+# Instrucciones de Rol y Estilo
+
+- Actúa como experto en Java 25 y Spring Boot 4
+- Idioma: Código siempre en inglés
+- Seguir reglas anti code smell para Java y las mejores prácticas Clean Code
+- El backend será una BD en Supabase
+- La conexión con las diferentes entidades en supabase se deberá hacer a través de API REST
+- la tabla users está en auth.users. Las demás están en public.
+- Este microservicio recibe un token JWT con la información de autenticación del usuario en Supabase. No debe encargarse de nada de autenticación
+- Los roles del token JWT del usuario están en el campo app_metadata.roles. Es una lista de roles. Estos roles están definidos en la tabla public.user_roles.
+- Los roles pueden tener permisos globales y permisos contextuales. Esto está definido en las reglas de negocio.
+- Se debe utilizar spring security para la obtención de la información del usuario a través del token JWT, ejecutar validaciones de seguridad y autorización para los endpoints siguiendo las reglas de negocio.
+- Los SMS e EMAILs deben ser enviados a través de un driven adapter específico para este fin y separado uno del otro. Los mensajes se dejan en colas rabbitMQ
+- Para trabajar con RabbitMQ, se debe implementar la librería commons-jms de Bancolombia en lo posible.
+- Todas las variables que deban ser externalizadas o sean secretas deben estar en el application.yaml
+
+# Estándares de Código
+
+- Usa siempre 'records' para DTOs. y clases del domain
+- Prefiere la inyección de dependencias por constructor, nunca uses @Autowired en campos.
+- Sigue los principios de Clean Architecture. Y por sobre todo, utiliza la estrategia de Clean Architecture desarrollada por Bancolombia
+- Para la creación de capas en la arquitectura limpia, se deben ejecutar los comandos gradle que tiene el plugin de clean architecture de Bancolombia, para crear las carpetas y archivos necesarios para cada capa.
+- Sigue las convenciones de desarrollo establecidas en el documento de convenciones: conventions.md
+- los nombres de los atributos, clases, métodos, etc. deben tener el estándar para java
+- Los entry points deben ser REST, construidos utilizando Route.fn de WebFlux
+- Todo el proyecto debe ser reactivo, por lo que se debe usar Mono o Flux según corresponda
+- se deben realizar validaciones de los campos de entrada según corresponda por el tipo de dato. Por ejemplo una url debe tener formato de url, un email debe tener formato de email, etc. Usar anotaciones de validación de Spring Boot y realizar validaciones personalizadas cuando sea necesario.
+
+# Reglas de negocio
+Esta es una plataforma para la organización de torneos de videojuegos, donde los usuarios pueden participar como jugadores, 
+espectadores o promotores. Los promotores pueden crear torneos, establecer reglas y premios, y gestionar las inscripciones. 
+Los jugadores pueden unirse a equipos y participar en los torneos, mientras que los espectadores pueden comprar entradas 
+para visualizar los eventos en vivo. La plataforma también ofrece incentivos monetarios a través de donaciones y 
+comisiones por participación.
+
+## Entidades principales (tablas en base de datos Supabase) y reglas de negocio asociadas a cada una:
+- ### commissions:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - commission_type (commission_types (enum): FREE, PAID)
+    - participation_percentage (float4)
+    - visualization_percentage (float4)
+    - donation_percentage (float4)
+  - Descripción: Tabla de comisiones para los torneos gratis y de pago. Define los porcentajes que se aplican a las diferentes fuentes de ingresos (participación, visualización y donaciones) para calcular las comisiones correspondientes.
+  - Reglas de negocio:
+    - Para los torneos gratuitos, se aplica la comisión definida en la tabla commissions para el tipo FREE, mientras que para los torneos de pago se aplica la comisión definida para el tipo PAID.
+    - La comisión se calcula multiplicando el porcentaje correspondiente por el monto total de ingresos de cada fuente (participación, visualización y donaciones) para cada torneo.
+    - Solo los usuarios con rol ADMIN pueden modificar las comisiones en la tabla commissions.
+- ### donations:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - user_id (uuid)
+    - team_id (uuid, nullable)
+    - amount (float8)
+    - message (text)
+    - status (transaction_status (enum): APPROVED, STARTED, REJECTED, IN_PROCESS)
+    - payment_method (payment_methods (enum): CREDIT_CARD, DEBIT_CARD, PAYPAL, CASH, BANK_TRANSFER)
+  - Descripción: Incentivo monetario que puede realizar cualquier usuario a un torneo. Las donaciones pueden ser para apoyar a un equipo específico o al torneo en general, y su estado puede variar según el proceso de pago.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - users -> user_id
+    - teams -> team_id (nullable)
+  - Reglas de negocio:
+    - Cualquier usuario puede realizar una donación a un torneo.
+    - Las donaciones pueden ser para apoyar a un equipo específico (en cuyo caso se debe proporcionar el team_id) o para apoyar al torneo en general (en cuyo caso el team_id es null).
+    - El estado de la donación se actualiza según el proceso de pago, y solo las donaciones con estado APPROVED se consideran válidas para el cálculo de ingresos del torneo.
+    - Sólo se puede donar a un torneo que esté en estado ONGOING.
+  - Notificaciones:
+    - Al usuario que realizó la donación sobre el estado de su donación en cualquier cambio de estado sobre su donación.
+- ### games:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - name (text)
+  - Descripción: Juegos que en los torneos podrán ser jugados. Un torneo solo puede tener un juego, por lo que esta tabla se relaciona con la tabla tournaments.
+  - Reglas de negocio:
+    - Cada torneo debe estar asociado a un juego específico.
+    - Un juego puede estar asociado a múltiples torneos, pero cada torneo solo puede tener un juego.
+    - Los juegos disponibles para los torneos deben ser definidos por los administradores de la plataforma, y solo los usuarios con rol ADMIN pueden agregar o eliminar juegos de la tabla games.
+- ### match_teams:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - match_id (uuid)
+    - team_id (uuid)
+  - Descripción: Tabla que relaciona los matches con los equipos que participan en ellos. Un match puede tener uno o varios equipos, y esta tabla permite establecer esa relación de manera flexible.
+  - Relaciones:
+    - matches -> match_id
+    - teams -> team_id
+  - Reglas de negocio:
+    - Un match puede tener uno o varios equipos participantes, y un equipo puede participar en varios matches dentro de un mismo torneo.
+    - Para que un equipo pueda participar en un match, el equipo debe estar inscrito en el torneo al que pertenece el match.
+    - Esto significa que debe existir una entrada en la tabla participation_tickets para ese equipo y torneo, con un estado de ticket_status que permita la participación (ACTIVE o USED).
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden asignar equipos a un match, y solo para matches de torneos que estén en estado ONGOING.
+- ### matches:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - winner_team_id (uuid, nullable)
+    - start_datetime (timestampz)
+    - end_datetime (timestampz, nullable)
+    - status (match_status (enum): SCHEDULED, ONGOING, COMPLETED, CANCELED)
+    - match_details (text)
+  - Descripción: Partida que se juega entre uno o varios equipos dentro de un torneo. Cada match tiene un estado que indica si está programado, en curso, completado o cancelado, y puede tener detalles adicionales sobre el desarrollo del juego.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - teams -> winner_team_id (nullable)
+  - Reglas de negocio:
+    - Debe estar asociado a un torneo específico, y puede tener uno o varios equipos participantes a través de la tabla match_teams.
+    - El estado del match se actualiza según su desarrollo: comienza como SCHEDULED, cambia a ONGOING cuando inicia, a COMPLETED cuando termina con un ganador definido, o a CANCELED si es cancelado por el promotor o moderador.
+    - El ganador del match se define al completar el match, y se actualiza el campo winner_team_id con el equipo ganador. Este campo es nullable porque no todos los matches tienen un ganador definido (por ejemplo, si el match es cancelado).
+    - No se puede cancelar un match que ya ha sido completado, y solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden cancelar un match.
+    - Solo se puede definir un ganador para un match que esté en estado ONGOING, y el equipo ganador debe ser uno de los equipos participantes en ese match.
+    - Los detalles del match pueden incluir información relevante sobre el desarrollo del juego, como estadísticas, eventos importantes, etc., y pueden ser actualizados por los promotores o moderadores durante el desarrollo del match.
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden actualizar el estado y los detalles de un match, y solo para matches de torneos que estén en estado ONGOING.
+    - Una vez que un match se completa, no se pueden realizar cambios en su estado o detalles, excepto para agregar información adicional sobre el resultado del match (por ejemplo, estadísticas finales), pero no se pueden cambiar el ganador ni el estado del match.
+    - Los matches solo pueden ser programados para torneos que estén en estado ONGOING, y no se pueden programar matches para torneos que estén en estado UPCOMING, COMPLETED o CANCELED.
+    - Solo se pueden programar matches para torneos que tengan al menos dos equipos inscritos a través de la tabla participation_tickets, con un estado de ticket_status que permita la participación (ACTIVE o USED).
+    - Los matches no pueden superponerse en el tiempo para un mismo torneo y que haya conflicto con un equipo que esté en ambos matches.
+    - Todos los cambios que se realicen sobre el torneo pueden ser ejecutados solo por moderadores que estén como moderadores en ese torneo; promotores que hayan creado el torneo, o un admin sin restricciones.
+  - Notificaciones:
+    - Cuando su equipo es asignado a un match, cuando su equipo es declarado ganador de un match, cuando un match en el que participan es cancelado, o cuando un match en el que participan cambia de estado.
+- ### participation_tickets:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - user_id (uuid)
+    - team_id (uuid, nullable)
+    - qr (bytea)
+    - transaction_status (transaction_status (enum): APPROVED, STARTED, REJECTED, IN_PROCESS)
+    - ticket_status (ticket_status (enum): NEW, ACTIVE, USED, BLOCKED)
+    - payment_method (payment_methods (enum): CREDIT_CARD, DEBIT_CARD, PAYPAL, CASH, BANK_TRANSFER)
+    - amount (float8)
+  - Descripción: Es una entrada para poder participar en un torneo. Los usuarios pueden comprar estas entradas para inscribirse en un torneo, y cada entrada tiene un código QR asociado para su validación. El estado de la transacción y el estado del ticket se actualizan según el proceso de compra y uso del ticket.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - users -> user_id
+    - teams -> team_id (nullable)
+  - Reglas de negocio:
+    - Cualquier usuario puede comprar una entrada para participar en un torneo, y cada entrada tiene un código QR asociado para su validación.
+    - Aunque las entradas las puede comprar cualquier persona con cualquier rol diferente de VIEWER, esta entrada tiene que tener asociado un equipo en cuando el ticket sea utilizado, porque el registro en el torneo es solo para equipos.
+    - El estado de la transacción se actualiza según el proceso de pago, y solo las entradas con estado APPROVED se consideran válidas para la participación en el torneo.
+    - Solo se puede comprar una entrada para un torneo que esté en estado UPCOMING u ONGOING, y no se pueden comprar entradas para torneos que estén en estado COMPLETED o CANCELED.
+    - Para que un equipo pueda participar en un torneo, al menos uno de sus miembros debe tener una entrada aprobada (APPROVED) para ese torneo, y el estado del ticket debe ser ACTIVE o USED.
+    - Cuando el proceso de pago inicia, se crea un ticket en estado NEW. Cuando se verifica el pago, el estado pasa automáticamente a ACTIVE. Cuando el equipo se registra en el torneo, entonces se pasa a estado USED.
+    - Una entrada se puede bloquear (BLOCKED) bajo cualquier circunstancia que amerite bloquear la participación de ese equipo en el torneo, como por ejemplo una violación de las reglas del torneo. Solo los usuarios con rol PROMOTER o ADMIN pueden bloquear una entrada.
+  - Notificaciones:
+      - Al usuario que realizó la compra sobre el estado de su entrada en cualquier cambio de estado sobre su entrada.
+      - Al promotor y moderadores del torneo sobre las nuevas inscripciones de equipos, indicando el equipo inscrito y el estado de su entrada.
+- ### rewards:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - team_id (uuid, nullable)
+    - position (int2)
+    - prize (float8, nullable)
+  - Descripción: El premio que tiene un torneo para el ganador y los standings. Esta tabla define los premios para las diferentes posiciones en un torneo, y debe estar asociada a un equipo cuando el resultado se haya definido.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - teams -> team_id (nullable)
+  - Reglas de negocio:
+    - Cada torneo puede tener múltiples recompensas definidas para diferentes posiciones (por ejemplo, primer lugar, segundo lugar, etc.), y cada recompensa debe estar asociada a un torneo específico.
+    - Una recompensa puede estar asociada a un equipo solo cuando el resultado del torneo se haya definido, es decir, cuando se hayan completado todos los matches y se hayan determinado las posiciones finales de los equipos. Antes de eso, el campo team_id en la tabla rewards debe ser null.
+    - El premio definido siempre será monetario (float8), pero puede ser null en caso de que el torneo no tenga un premio definido o sea un torneo gratuito sin premios monetarios.
+     - Solo los usuarios con rol PROMOTER o ADMIN pueden definir o modificar las recompensas.
+- ### streams:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - platform (stream_platforms (enum): TWITCH, YOUTUBE, FACEBOOK, KICK, INSTAGRAM, TIKTOK)
+    - url (text)
+    - type (stream_types (enum): FREE, PAID)
+  - Descripción: Es la plataforma en la cual se transmitirá en vivo una partida del torneo. Cada torneo puede tener múltiples streams asociados, y cada stream tiene una URL que apunta a la transmisión en vivo.
+  - Relaciones:
+    - tournaments -> tournament_id
+  - Reglas de negocio:
+    - Cada torneo puede tener múltiples streams asociados, y cada stream debe estar asociado a un torneo específico.
+    - La URL de cada stream debe ser válida y debe apuntar a una transmisión en vivo de la partida del torneo.
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden agregar o modificar los streams asociados a un torneo.
+    - Si un torneo es de tipo PAID, entonces solo los usuarios que tengan una entrada de visualización (visualization_ticket) en estado USED para ese torneo pueden acceder a los streams asociados a ese torneo. Si el torneo es de tipo FREE, entonces cualquier usuario puede acceder a los streams asociados a ese torneo.
+     - Solo se pueden agregar o modificar los streams asociados a un torneo que esté en estado UPCOMING u ONGOING, y solo los promotores, moderadores o admins pueden agregar o modificar los streams asociados a un torneo.
+- ### team_members:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - team_id (uuid)
+    - user_id (uuid)
+  - Descripción: Es la tabla que relaciona los equipos con los usuarios que son miembros de esos equipos. Un equipo puede tener varios miembros, y un usuario puede ser miembro de varios equipos, por lo que esta tabla permite establecer esa relación de manera flexible.
+  - Relaciones:
+    - teams -> team_id
+    - users -> user_id
+  - Reglas de negocio:
+    - Un equipo puede tener varios miembros, y un usuario puede ser miembro de varios equipos, pero un usuario no puede ser miembro del mismo equipo más de una vez.
+    - Para que un usuario pueda ser miembro de un equipo, el equipo debe estar inscrito en al menos un torneo a través de la tabla participation_tickets, con un estado de ticket_status que permita la participación (ACTIVE o USED).
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden agregar o eliminar miembros de un equipo, y solo para equipos que estén inscritos en torneos que estén en estado ONGOING.
+- ### teams:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - name (text)
+    - leader_user_id (uuid)
+  - Descripción: Un grupo de participantes (players) que participan en torneos. Cada equipo tiene un líder que es un usuario de la plataforma, y puede tener varios miembros que participan en los torneos.
+  - Relaciones:
+    - users -> leader_user_id
+  - Reglas de negocio:
+    - Un equipo debe tener un líder que es un usuario de la plataforma, y puede tener varios miembros que participan en los torneos.
+    - Un equipo no puede participar en un torneo sin tener al menos un miembro inscrito a través de la tabla participation_tickets, con un estado de ticket_status que permita la participación (ACTIVE o USED).
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden eliminar equipos.
+    - Cualquier usuario con rol PLAYER puede crear un equipo y participar en torneos, pero para que un equipo pueda participar en un torneo, al menos uno de sus miembros debe tener una entrada aprobada (APPROVED) para ese torneo, y el estado del ticket debe ser ACTIVE o USED.
+  - Notificaciones:
+    - al líder del equipo cuando un nuevo miembro se une a su equipo, cuando un miembro abandona su equipo, o cuando su equipo es eliminado de un torneo.
+    - al usuario que está ingresando o abandonando al equipo. También cuando el equipo es eliminado.
+- ### tournament_moderators:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - user_id (uuid)
+  - Descripción: Es la tabla que relaciona los torneos con los usuarios que son moderadores de esos torneos. Un torneo puede tener varios moderadores, y un usuario puede ser moderador de varios torneos, por lo que esta tabla permite establecer esa relación de manera flexible.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - users -> user_id
+  - Reglas de negocio:
+    - Un torneo puede tener varios moderadores, y un usuario puede ser moderador de varios torneos, pero un usuario no puede ser moderador del mismo torneo más de una vez.
+    - Solo los usuarios con rol PROMOTER o ADMIN pueden asignar o eliminar moderadores de un torneo.
+    - Los moderadores de un torneo tienen permisos para gestionar ese torneo específico, lo que incluye la capacidad de actualizar el estado del torneo, gestionar los matches, asignar equipos a los matches, gestionar las entradas de participación y visualización, y gestionar los streams asociados al torneo.
+    - Un moderador no puede eliminar a otro moderador excepto a él mismo, mientras que el promotor o un admin sí puede eliminar a cualquier moderador.
+    - Un moderador no puede eliminar al promotor del torneo.
+  - Notificaciones:
+    - Cuando es asignado como moderador de un torneo o cuando es removido como moderador de un torneo.
+- ### tournaments:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - name (text)
+    - rules (text, nullable)
+    - promoter_user_id (uuid)
+    - game_id (uuid)
+    - place_limit (int4)
+    - place_remaining (int4)
+    - place_minimum (int4)
+    - date_start (date)
+    - date_end (date)
+    - participation_price (float8)
+    - visualization_price (float8)
+    - type (tournament_types (enum): FREE, PAID)
+    - status (tournament_status (enum): UPCOMING, ONGOING, COMPLETED, CANCELED)
+    - description (text, nullable)
+  - Descripción: El evento principal de la plataforma. Torneos de videojuegos entre equipos con un premio. Cada torneo tiene un estado que indica si está próximo, en curso, completado o cancelado, y puede tener reglas y una descripción adicional.
+  - Relaciones:
+    - users -> promoter_user_id
+    - games -> game_id
+  - Reglas de negocio:
+    - Debe tener un promotor que es un usuario de la plataforma, y debe estar asociado a un juego específico.
+    - Puede tener varios moderadores asignados a través de la tabla tournament_moderators, y puede tener varios equipos participantes a través de la tabla participation_tickets.
+    - El estado del torneo se actualiza según su desarrollo: comienza como UPCOMING, cambia a ONGOING cuando inicia, a COMPLETED cuando termina con un ganador definido, o a CANCELED si es cancelado por el promotor o moderador.
+    - Solo los usuarios con rol PROMOTER o ADMIN pueden crear un torneo, y solo el promotor o un admin pueden actualizar el estado del torneo o cancelar el torneo.
+    - Un torneo solo puede ser cancelado si está en estado UPCOMING u ONGOING, y no se pueden cancelar torneos que estén en estado COMPLETED o CANCELED.
+    - Un torneo solo puede ser completado si está en estado ONGOING, y para completar un torneo se deben haber definido los ganadores de todos los matches asociados a ese torneo.
+    - Solo se pueden definir los ganadores de los matches de un torneo que esté en estado ONGOING, y solo los promotores, moderadores o admins pueden definir los ganadores de los matches.
+    - Solo se pueden agregar o modificar las reglas y la descripción de un torneo que esté en estado UPCOMING u ONGOING, y solo los promotores, moderadores o admins pueden agregar o modificar las reglas y la descripción de un torneo.
+    - Un torneo no puede iniciar (status ONGOING) si no tiene al menos la cantidad de equipos inscritos que marca el campo place_minimum, y no se pueden inscribir más equipos si se ha alcanzado el límite de participantes definido en place_limit.
+    - Cada vez que un ticket pase a estado USED para este torneo, el contador de place_remaining se debe reducir en 1.
+    - Cuando el torneo se crea, el valor de place_remaining debe ser igual al valor de place_limit, y este valor se va reduciendo a medida que los equipos se inscriben en el torneo a través de la compra de entradas (participation_tickets) que pasan a estado USED.
+    - Solo los usuarios con rol PROMOTER o ADMIN pueden modificar el límite de participantes (place_limit) y el mínimo de participantes (place_minimum) de un torneo, y solo para torneos que estén en estado UPCOMING.
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden agregar o modificar las reglas y la descripción de un torneo, y solo para torneos que estén en estado UPCOMING u ONGOING.
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden agregar o modificar los streams asociados a un torneo.
+    - Cuando un torneo se completa, se deben definir los ganadores, quienes son los que van a estar en la tabla rewards con su posición y premio definido. Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden definir los ganadores de un torneo, y solo para torneos que estén en estado ONGOING.
+    - Solo se pueden definir los ganadores de un torneo cuando todos los matches asociados a ese torneo estén en estado COMPLETED, y el ganador de cada match debe ser un equipo que haya participado en ese torneo a través de la tabla participation_tickets, con un estado de ticket_status que permita la participación (USED).
+  - Notificaciones:
+    - A los miembros del equipo cuando su equipo se inscribe en un torneo, cuando es eliminado de un torneo, o cuando un torneo en el que participan cambia de estado
+    - Al promotor en cualquier cambio de estado del torneo.
+- ### visualization_tickets:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - user_id (uuid)
+    - qr (bytea)
+    - transaction_status (transaction_status (enum): APPROVED, STARTED, REJECTED, IN_PROCESS)
+    - ticket_status (ticket_status (enum): NEW, ACTIVE, USED, BLOCKED)
+    - payment_method (payment_methods (enum): CREDIT_CARD, DEBIT_CARD, PAYPAL, CASH, BANK_TRANSFER)
+    - amount (float8)
+  - Descripción: Es una entrada para poder visualizar un torneo. Los usuarios pueden comprar estas entradas para acceder a la transmisión en vivo de un torneo, y cada entrada tiene un código QR asociado para su validación. El estado de la transacción y el estado del ticket se actualizan según el proceso de compra y uso del ticket.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - users -> user_id
+  - Reglas de negocio:
+    - Cualquier usuario puede comprar una entrada para visualizar un torneo, y cada entrada tiene un código QR asociado para su validación.
+    - El estado de la transacción se actualiza según el proceso de pago, y solo las entradas con estado APPROVED se consideran válidas para la visualización del torneo.
+    - Solo se puede comprar una entrada para visualizar un torneo que esté en estado UPCOMING u ONGOING, y no se pueden comprar entradas para torneos que estén en estado COMPLETED o CANCELED.
+    - Cuando un usuario realiza el proceso de compra, el ticket está en estado NEW. Cuando la compra se completa y se verifica, entonces pasa a estado ACTIVE. Cuando se utiliza el ticket para obtener la entrada VIP a los streams definidos para este torneo.
+    - Cuando el proceso de pago inicia, se crea un ticket en estado NEW. Cuando se verifica el pago, el estado pasa automáticamente a ACTIVE. Cuando el usuario accede a la transmisión del torneo, entonces se pasa a estado USED.
+    - Una entrada se puede bloquear (BLOCKED) bajo cualquier circunstancia que amerite bloquear la visualización de ese torneo para ese usuario, como por ejemplo una violación de las reglas del torneo. Solo los usuarios con rol PROMOTER o ADMIN pueden bloquear una entrada de visualización.
+    - No se pueden comprar tickets para un torneo FREE, pues los torneos FREE deben tener todos sus streams en tipo FREE, lo que significa que cualquier usuario puede acceder a ellos sin necesidad de una entrada de visualización.
+    - Solo se pueden comprar tickets para visualizar un torneo PAID, y para acceder a los streams de un torneo PAID se debe tener una entrada de visualización (visualization_ticket) en estado USED para ese torneo.
+  - Notificaciones:
+    - Se notifica al usuario que realizó la compra sobre el estado de su entrada de visualización en cualquier cambio de estado sobre su entrada.
+- ### user_roles:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - user_id (uuid)
+    - role (roles (enum): ADMIN, PROMOTER, PLAYER, VIEWER, MOD)
+  - Descripción: Es la tabla que define los roles de los usuarios en la plataforma. Los permisos globales se aplican a todas las acciones del usuario, mientras que los permisos contextuales se aplican solo a ciertas acciones o recursos específicos.
+  - Relaciones:
+    - users -> user_id
+  - Reglas de negocio:
+    - Un usuario puede tener uno o varios roles, y cada rol define un conjunto de permisos que pueden ser globales o contextuales.
+    - Los permisos globales se aplican a todas las acciones del usuario en la plataforma, mientras que los permisos contextuales se aplican solo a ciertas acciones o recursos específicos (por ejemplo, un usuario puede ser moderador de un torneo específico, lo que le da permisos para gestionar ese torneo pero no otros).
+    - Solo un usuario ADMIN puede asignar un rol PROMOTER a un usuario.
+    - El rol VIEWER se crea por defecto cuando un usuario se registra en la plataforma.
+    - El rol PLAYER puede ser asignado a un usuario por sí mismo a través de un endpoint. Es decir, un usuario VIEWER puede ser player cuando él quiera.
+    - Un rol MODERATOR puede ser asignado a un usuario por sí mismo a través de un endpoint. Sin embargo, solo un PROMOTER puede darle permiso de moderador en sus torneos, o un ADMIN en cualquier torneo.
+    - Los permisos definidos por los roles se deben respetar en todas las operaciones de la plataforma, y cualquier acción que requiera ciertos permisos debe verificar que el usuario tenga el rol adecuado antes de permitir la acción.
+    - Los usuarios con rol ADMIN tienen permisos para gestionar cualquier aspecto de la plataforma sin restricciones, incluyendo la capacidad de asignar o eliminar roles a otros usuarios, gestionar torneos, matches, equipos, entradas, streams, comisiones y cualquier otro recurso de la plataforma.
+- ### tournament_teams:
+  - Campos
+    - id (uuid)
+    - created_at (timestampz)
+    - tournament_id (uuid)
+    - team_id (uuid)
+  - Descripción: Es la tabla que relaciona los torneos con los equipos que participan en esos torneos. Un torneo puede tener varios equipos participantes, y un equipo puede participar en varios torneos, por lo que esta tabla permite establecer esa relación de manera flexible.
+  - Relaciones:
+    - tournaments -> tournament_id
+    - teams -> team_id
+  - Reglas de negocio:
+    - Un torneo puede tener varios equipos participantes, y un equipo puede participar en varios torneos, pero un equipo no puede participar en el mismo torneo más de una vez.
+    - Para que un equipo pueda participar en un torneo, al menos uno de sus miembros debe tener una entrada aprobada (APPROVED) para ese torneo, y el estado del ticket debe ser ACTIVE o USED.
+    - Esta tabla se llena automáticamente cuando una entrada de participación (participation_ticket) cambia a estado USED, lo que indica que el equipo asociado a esa entrada se ha registrado oficialmente en el torneo.
+    - Solo los usuarios con rol PROMOTER, MODERATOR o ADMIN pueden eliminar un equipo de un torneo, lo que implica eliminar la relación entre ese equipo y el torneo en la tabla tournament_teams. Esta acción se puede realizar solo para torneos que estén en estado ONGOING.

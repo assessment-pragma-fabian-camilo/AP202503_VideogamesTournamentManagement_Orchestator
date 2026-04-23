@@ -1,0 +1,33 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+	testImplementation 'tools.jackson.core:jackson-databind'
+    implementation project(':email-notification')
+    implementation project(':sms-notification')
+    implementation project(':qr')
+    implementation project(':supabase')
+    implementation project(':reactive-web')
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+    testImplementation 'com.tngtech.archunit:archunit:1.4.1'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:5.0.1'
+}
+
+tasks.register('explodedJar', Copy) {
+    with jar
+    into layout.buildDirectory.dir("exploded")
+}
+
+jar {
+    // To disable the *-plain.jar
+    enabled = false
+}
+
+bootJar {
+    // Sets output jar name
+    archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
+}

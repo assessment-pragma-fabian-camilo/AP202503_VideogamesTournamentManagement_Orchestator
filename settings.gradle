@@ -1,0 +1,26 @@
+pluginManagement {
+    repositories {
+        //mavenLocal()
+        //maven { url '...' }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'VideogamesTournamentManagement'
+
+include ':app-service'
+include ':model'
+include ':usecase'
+project(':app-service').projectDir = file('./applications/app-service')
+project(':model').projectDir = file('./domain/model')
+project(':usecase').projectDir = file('./domain/usecase')
+include ':reactive-web'
+project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
+include ':qr'
+project(':qr').projectDir = file('./infrastructure/driven-adapters/qr')
+include ':supabase'
+project(':supabase').projectDir = file('./infrastructure/driven-adapters/rest-consumer')
+include ':email-notification'
+project(':email-notification').projectDir = file('./infrastructure/driven-adapters/email-notification')
+include ':sms-notification'
+project(':sms-notification').projectDir = file('./infrastructure/driven-adapters/sms-notification')
