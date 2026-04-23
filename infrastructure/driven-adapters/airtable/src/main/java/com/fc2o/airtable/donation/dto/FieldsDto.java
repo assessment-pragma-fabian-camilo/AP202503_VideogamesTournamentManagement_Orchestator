@@ -6,8 +6,8 @@ import java.math.BigDecimal;
 
 @Builder
 public record FieldsDto(
-  String userId,
-  String tournamentId,
-  BigDecimal amount
+        String userId,
+        String tournamentId,
+        BigDecimal amount
 ) {
 }

@@ -14,49 +14,49 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserHandler implements UserRepository {
 
-  private final UserWebClient webClient;
-  private final UserMapper mapper;
+    private final UserWebClient webClient;
+    private final UserMapper mapper;
 
-  @Override
-  public Mono<User> findById(String id) {
-    return webClient.retrieveById(id)
-      .map(mapper::toUser);
-  }
+    @Override
+    public Mono<User> findById(String id) {
+        return webClient.retrieveById(id)
+                .map(mapper::toUser);
+    }
 
-  @Override
-  public Flux<User> findAll() {
-    return webClient.retrieveAll()
-      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
-      .map(mapper::toUser);
-  }
+    @Override
+    public Flux<User> findAll() {
+        return webClient.retrieveAll()
+                .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+                .map(mapper::toUser);
+    }
 
-  @Override
-  public Flux<User> findAllById(Set<String> ids) {
-    return webClient.retrieveAll()
-      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
-      .filter(dto -> ids.contains(dto.id()))
-      .map(mapper::toUser);
-  }
+    @Override
+    public Flux<User> findAllById(Set<String> ids) {
+        return webClient.retrieveAll()
+                .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+                .filter(dto -> ids.contains(dto.id()))
+                .map(mapper::toUser);
+    }
 
-  @Override
-  public Mono<User> save(User user) {
-    return null;
-  }
+    @Override
+    public Mono<User> save(User user) {
+        return null;
+    }
 
-  @Override
-  public Mono<User> update(User user) {
-    return null;
-  }
+    @Override
+    public Mono<User> update(User user) {
+        return null;
+    }
 
-  @Override
-  public Mono<User> patch(User user) {
-    return webClient
-      .patch(mapper.toWrapperDto(user))
-      .map(dto -> mapper.toUser(dto.records().getFirst()));
-  }
+    @Override
+    public Mono<User> patch(User user) {
+        return webClient
+                .patch(mapper.toWrapperDto(user))
+                .map(dto -> mapper.toUser(dto.records().getFirst()));
+    }
 
-  @Override
-  public Mono<User> deleteById(String id) {
-    return null;
-  }
+    @Override
+    public Mono<User> deleteById(String id) {
+        return null;
+    }
 }

@@ -5,8 +5,8 @@ import lombok.Builder;
 
 @Builder
 public record RecordDto(
-  String id,
-  String createdTime,
-  FieldsDto fields
+        String id,
+        String createdTime,
+        FieldsDto fields
 ) {
 }

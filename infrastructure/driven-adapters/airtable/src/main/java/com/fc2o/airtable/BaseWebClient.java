@@ -13,20 +13,20 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Getter
 public class BaseWebClient {
 
-  private final WebClient webClient;
+    private final WebClient webClient;
 
-  public BaseWebClient(@Value("${driven-adapter.airtable.base-url}") String baseUrl) {
-    // Configura el ObjectMapper para ignorar valores null
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    public BaseWebClient(@Value("${driven-adapter.airtable.base-url}") String baseUrl) {
+        // Configura el ObjectMapper para ignorar valores null
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-    // Configura los codecs de Jackson en el WebClient
-    ExchangeStrategies strategies = ExchangeStrategies.builder()
-      .codecs(clientCodecConfigurer -> clientCodecConfigurer
-        .defaultCodecs()
-        .jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper)))
-      .build();
+        // Configura los codecs de Jackson en el WebClient
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(clientCodecConfigurer -> clientCodecConfigurer
+                        .defaultCodecs()
+                        .jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper)))
+                .build();
 
-    this.webClient = WebClient.builder().baseUrl(baseUrl).exchangeStrategies(strategies).build();
-  }
+        this.webClient = WebClient.builder().baseUrl(baseUrl).exchangeStrategies(strategies).build();
+    }
 }

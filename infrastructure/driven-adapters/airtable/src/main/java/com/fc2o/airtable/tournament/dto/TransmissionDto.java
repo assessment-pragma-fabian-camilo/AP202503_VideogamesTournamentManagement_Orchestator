@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record TransmissionDto(
-  String url,
-  PlatformDto platform
+        String url,
+        PlatformDto platform
 ) {
 }

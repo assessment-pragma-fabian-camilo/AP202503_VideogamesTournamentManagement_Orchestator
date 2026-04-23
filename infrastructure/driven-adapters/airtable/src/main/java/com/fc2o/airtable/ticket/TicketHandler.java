@@ -12,52 +12,52 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TicketHandler implements TicketRepository {
 
-  private final TicketWebClient webClient;
-  private final TicketMapper mapper;
+    private final TicketWebClient webClient;
+    private final TicketMapper mapper;
 
-  @Override
-  public Mono<Ticket> findById(String id) {
-    return webClient.retrieveById(id)
-      .map(mapper::toTicket);
-  }
+    @Override
+    public Mono<Ticket> findById(String id) {
+        return webClient.retrieveById(id)
+                .map(mapper::toTicket);
+    }
 
-  @Override
-  public Flux<Ticket> findAllByTournamentIdAndCustomerId(String tournamentId, String customerId) {
-    return webClient.retrieveAll()
-      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
-      .filter(record -> record.fields().customerId().equals(customerId))
-      .filter(record -> record.fields().tournamentId().equals(tournamentId))
-      .map(mapper::toTicket);
-  }
+    @Override
+    public Flux<Ticket> findAllByTournamentIdAndCustomerId(String tournamentId, String customerId) {
+        return webClient.retrieveAll()
+                .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+                .filter(record -> record.fields().customerId().equals(customerId))
+                .filter(record -> record.fields().tournamentId().equals(tournamentId))
+                .map(mapper::toTicket);
+    }
 
-  @Override
-  public Flux<Ticket> findAll() {
-    return webClient.retrieveAll()
-      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
-      .map(mapper::toTicket);
-  }
+    @Override
+    public Flux<Ticket> findAll() {
+        return webClient.retrieveAll()
+                .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+                .map(mapper::toTicket);
+    }
 
-  @Override
-  public Mono<Ticket> save(Ticket ticket) {
-    return webClient
-      .create(mapper.toWrapperDto(ticket))
-      .map(dto -> mapper.toTicket(dto.records().getFirst()));
-  }
+    @Override
+    public Mono<Ticket> save(Ticket ticket) {
+        return webClient
+                .create(mapper.toWrapperDto(ticket))
+                .map(dto -> mapper.toTicket(dto.records().getFirst()));
+    }
 
-  @Override
-  public Mono<Ticket> update(Ticket ticket) {
-    return null;
-  }
+    @Override
+    public Mono<Ticket> update(Ticket ticket) {
+        return null;
+    }
 
-  @Override
-  public Mono<Ticket> patch(Ticket ticket) {
-    return webClient
-      .patch(mapper.toWrapperDto(ticket))
-      .map(dto -> mapper.toTicket(dto.records().getFirst()));
-  }
+    @Override
+    public Mono<Ticket> patch(Ticket ticket) {
+        return webClient
+                .patch(mapper.toWrapperDto(ticket))
+                .map(dto -> mapper.toTicket(dto.records().getFirst()));
+    }
 
-  @Override
-  public Mono<Ticket> deleteById(String id) {
-    return null;
-  }
+    @Override
+    public Mono<Ticket> deleteById(String id) {
+        return null;
+    }
 }

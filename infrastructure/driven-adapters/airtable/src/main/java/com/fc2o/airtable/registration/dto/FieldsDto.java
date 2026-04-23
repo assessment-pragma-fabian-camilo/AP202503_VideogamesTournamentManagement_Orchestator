@@ -4,8 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record FieldsDto(
-  String tournamentId,
-  String participantId,
-  StatusDto status
+        String tournamentId,
+        String participantId,
+        StatusDto status
 ) {
 }
