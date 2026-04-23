@@ -16,9 +16,11 @@ project(':model').projectDir = file('./domain/model')
 project(':usecase').projectDir = file('./domain/usecase')
 include ':reactive-web'
 project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
-include ':airtable'
-project(':airtable').projectDir = file('./infrastructure/driven-adapters/airtable')
 include ':qr'
 project(':qr').projectDir = file('./infrastructure/driven-adapters/qr')
-include ':email-sender'
-project(':email-sender').projectDir = file('./infrastructure/driven-adapters/email-sender')
+include ':supabase'
+project(':supabase').projectDir = file('./infrastructure/driven-adapters/rest-consumer')
+include ':email-notification'
+project(':email-notification').projectDir = file('./infrastructure/driven-adapters/email-notification')
+include ':sms-notification'
+project(':sms-notification').projectDir = file('./infrastructure/driven-adapters/sms-notification')
