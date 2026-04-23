@@ -11,20 +11,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmailSenderService {
 
-  private final JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
-  public void sendEmail(EmailMessageDto dto) {
-    try {
-      MimeMessage message = mailSender.createMimeMessage();
-      MimeMessageHelper helper = new MimeMessageHelper(message, true);
-      helper.setTo(dto.to());
-      helper.setSubject(dto.subject());
-      helper.setText(dto.body(), true);
+    public void sendEmail(EmailMessageDto dto) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(dto.to());
+            helper.setSubject(dto.subject());
+            helper.setText(dto.body(), true);
 
-      mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Error enviando el correo", e);
+        }
     }
-    catch (Exception e) {
-      throw new RuntimeException("Error enviando el correo", e);
-    }
-  }
 }

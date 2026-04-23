@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmailSenderHandler implements NotificationMessageRepository {
 
-  private final EmailSenderService emailSenderService;
-  private final EmailMessageMapper emailMessageMapper;
+    private final EmailSenderService emailSenderService;
+    private final EmailMessageMapper emailMessageMapper;
 
-  @Override
-  public void send(NotificationMessage message) {
-    emailSenderService.sendEmail(emailMessageMapper.toEmailMessageDto(message));
-  }
+    @Override
+    public void send(NotificationMessage message) {
+        emailSenderService.sendEmail(emailMessageMapper.toEmailMessageDto(message));
+    }
 }

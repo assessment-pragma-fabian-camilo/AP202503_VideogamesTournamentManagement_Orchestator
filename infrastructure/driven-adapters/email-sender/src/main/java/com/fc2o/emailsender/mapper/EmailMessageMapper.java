@@ -10,6 +10,6 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
 
 @Mapper(componentModel = SPRING, unmappedTargetPolicy = IGNORE)
 public interface EmailMessageMapper {
-  @Mapping(target = ".", source = ".")
-  EmailMessageDto toEmailMessageDto(NotificationMessage message);
+    @Mapping(target = ".", source = ".")
+    EmailMessageDto toEmailMessageDto(NotificationMessage message);
 }
