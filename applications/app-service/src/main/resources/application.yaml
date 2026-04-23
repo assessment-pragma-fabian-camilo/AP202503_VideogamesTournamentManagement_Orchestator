@@ -71,3 +71,5 @@ driven-adapter:
     donation:
       base-path:
       bearer:
+  qr:
+    base-url: https://api.qrserver.com/v1/create-qr-code/
