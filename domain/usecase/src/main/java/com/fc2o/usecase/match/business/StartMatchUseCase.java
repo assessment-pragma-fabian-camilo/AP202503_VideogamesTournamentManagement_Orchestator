@@ -27,7 +27,7 @@ public class StartMatchUseCase {
   * Actualizar Match en estado STARTED
    */
 
-  public Mono<Match> startMatch(UUID matchId, UUID userId) {
+  public Mono<Match> startMatch(UUID tournamentId, UUID matchId, UUID userId) {
     return retrieveMatchUseCase.retrieve(matchId)
       .doOnNext(match -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.START_MATCH))
       .filter(match -> !match.isInProgress())

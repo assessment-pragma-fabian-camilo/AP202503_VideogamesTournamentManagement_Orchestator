@@ -25,12 +25,9 @@ public class RescheduleTournamentUseCase {
   public Mono<Tournament> reschedule(Tournament tournament, UUID userId) {
     return retrieveTournamentUseCase.retrieveById(tournament.id())
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.RESCHEDULE))
-      .filter(t -> !t.isCanceled())
-      .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
-      .filter(t -> !t.isFinished())
-      .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .filter(t -> !t.isInProgress())
-      .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya inició")))
+      .zipWhen(this::rescheduleStartDate)
+      .zipWhen(objects -> rescheduleEndDate(objects.getT1()))
+      .map(objects -> objects.getT1().getT1())
       .flatMap(t -> patchTournamentUseCase.patch(tournament));
   }
 
@@ -43,17 +40,19 @@ public class RescheduleTournamentUseCase {
       .flatMap(t -> patchTournamentUseCase.patch(tournament));
   }
 
-  public Mono<Tournament> rescheduleStartDate(Tournament tournament, UUID userId) {
-    return reschedule(tournament, userId);
+  public Mono<Tournament> rescheduleStartDate(Tournament tournament) {
+    return Mono.just(tournament)
+      .filter(t -> t.dateStart() != null)
+      .filter(t -> !t.isInProgress())
+      .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya inició")));
   }
 
-  public Mono<Tournament> rescheduleEndDate(Tournament tournament, UUID userId) {
-    return retrieveTournamentUseCase.retrieveById(tournament.id())
-      .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.RESCHEDULE_END_DATE))
+  public Mono<Tournament> rescheduleEndDate(Tournament tournament) {
+    return Mono.just(tournament)
+      .filter(t -> t.dateEnd() != null)
       .filter(t -> !t.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(t -> !t.isFinished())
-      .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .flatMap(t -> patchTournamentUseCase.patch(tournament));
+      .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")));
   }
 }

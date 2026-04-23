@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class RegisterMatchUseCase {
@@ -26,11 +25,10 @@ public class RegisterMatchUseCase {
   * Crear el match en estado NOT_STARTED
    */
 
-  //TODO: Entodos los puntos de register, se debe crear el UUID id de cada elemento
-  public Mono<Match> registerMatch(Match match, UUID userId) {
+  public Mono<Match> registerMatch(UUID tournamentId, Match match, UUID userId) {
     AtomicReference<StringBuffer> uuidsNotRegistered = new AtomicReference<>();
-    return retrieveTournamentUseCase.retrieveById(match.tournamentId())
-      .doOnNext(tournament -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.REGISTER_MATCH))
+    return retrieveTournamentUseCase.retrieveById(tournamentId)
+      .doOnNext(tournament -> permissionsService.validate(tournamentId, userId, TournamentUseCases.REGISTER_MATCH))
       .flatMapMany(tournament ->
         Flux.fromIterable(match.participantIds())
           .filter(uuid -> !tournament.participantIds().contains(uuid))

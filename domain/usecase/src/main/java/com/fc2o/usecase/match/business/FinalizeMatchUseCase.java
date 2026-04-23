@@ -24,9 +24,9 @@ public class FinalizeMatchUseCase {
   * Validar que el winner sea un participante
    */
 
-  public Mono<Match> finalizeMatch(UUID matchId, UUID userId, UUID winnerId) {
+  public Mono<Match> finalizeMatch(UUID tournamentId, UUID matchId, UUID winnerId, UUID userId) {
     return retrieveMatchUseCase.retrieve(matchId)
-      .doOnNext(match -> permissionsService.validate(match.tournamentId(), userId, TournamentUseCases.FINALIZE_MATCH))
+      .doOnNext(match -> permissionsService.validate(tournamentId, userId, TournamentUseCases.FINALIZE_MATCH))
       .filter(Match::isFinished)
       .switchIfEmpty(Mono.error(new RuntimeException("La partida ya finalizó")))
       .filter(Match::isCanceled)

@@ -17,6 +17,6 @@ public class RetrieveTournamentUseCase {
   }
 
   public Flux<Tournament> findAllByPromoterId(UUID promoterId) {
-    return tournamentRepository.findAllByPromoterIdAndIsPaid(promoterId);
+    return tournamentRepository.findAllByPromoterId(promoterId);
   }
 }
