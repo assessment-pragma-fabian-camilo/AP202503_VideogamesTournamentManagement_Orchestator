@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class FinalizeTournamentUseCase {
@@ -34,7 +33,7 @@ public class FinalizeTournamentUseCase {
   * Cambiar el estado a FINISHED
    */
 
-  public Mono<Tuple2<Tournament, Reward>> finalize(UUID tournamentId, Reward reward, UUID userId) {
+  public Mono<Tuple2<Tournament, Reward>> finalize(String tournamentId, Reward reward, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournament.id(), userId, TournamentUseCases.FINALIZE))
       .filter(tournament -> !tournament.isNotStarted())
@@ -55,7 +54,7 @@ public class FinalizeTournamentUseCase {
       .zipWhen(tournament -> registerRewardUseCase.registerReward(reward, tournament));
   }
 
-  public Mono<Tournament> forceFinalize(UUID tournamentId, Reward reward, UUID userId) {
+  public Mono<Tournament> forceFinalize(String tournamentId, Reward reward, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(t -> permissionsService.validate(t.id(), userId, TournamentUseCases.FORCE_FINALIZE))
       .filter(tournament -> !tournament.isNotStarted())

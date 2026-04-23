@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class RegisterDonationUseCase {
@@ -20,7 +19,7 @@ public class RegisterDonationUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .filter(tournament -> !tournament.isFinished())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo ya finalizó")))
-      .map(tournament -> donation.toBuilder().id(UUID.randomUUID()).createdTime(LocalDateTime.now()).build())
+      .map(tournament -> donation.toBuilder().createdTime(LocalDateTime.now()).build())
       .flatMap(createDonationUseCase::create);
   }
 }

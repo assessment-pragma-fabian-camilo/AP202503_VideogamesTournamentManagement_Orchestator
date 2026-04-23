@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 public class MatchRouterV1 {
   @Bean
   @Order(1)
-  public RouterFunction<ServerResponse> tournamentRouterFunction(MatchHandlerV1 handlerV1) {
+  public RouterFunction<ServerResponse> matchRouterFunction(MatchHandlerV1 handlerV1) {
     return RouterFunctions
       .route()
       .path("/api/v1",

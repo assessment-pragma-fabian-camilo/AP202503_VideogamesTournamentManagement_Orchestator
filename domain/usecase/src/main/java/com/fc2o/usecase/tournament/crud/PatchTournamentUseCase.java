@@ -5,7 +5,7 @@ import com.fc2o.model.tournament.gateways.TournamentRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class PatchTournamentUseCase {
@@ -17,17 +17,17 @@ public class PatchTournamentUseCase {
   }
 
   //Este method debe eliminar el participantId de pre-gegister y agregarlo a participantIds
-  public Mono<Tournament> patchRegisterParticipant(UUID participantId) {
-    return tournamentRepository.patchRegisterParticipant(participantId);
+  public Mono<Tournament> patchRegisterParticipant(String tournamentId, String participantId) {
+    return tournamentRepository.patchRegisterParticipant(tournamentId, participantId);
   }
 
-  //Este method debe eliminar el participantId de pre-gegister y agregarlo a participantIds
-  public Mono<Tournament> patchPreRegisterParticipant(UUID participantId) {
-    return tournamentRepository.patchPreRegisterParticipant(participantId);
+  //Este method debe agregar el participantId a pre-register y reducir en 1 el remaining
+  public Mono<Tournament> patchPreRegisterParticipant(String tournamentId, String participantId) {
+    return tournamentRepository.patchPreRegisterParticipant(tournamentId, participantId);
   }
 
   //Este method debe eliminar el participantId de pre-gegister y de participants y agregarlo en disqualifieds
-  public Mono<Tournament> patchDisqualify(UUID participantId) {
-    return tournamentRepository.patchDisqualify(participantId);
+  public Mono<Tournament> patchDisqualify(String tournamentId, String participantId) {
+    return tournamentRepository.patchDisqualify(tournamentId, participantId);
   }
 }

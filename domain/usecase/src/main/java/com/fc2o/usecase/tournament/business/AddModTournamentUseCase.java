@@ -8,8 +8,6 @@ import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class AddModTournamentUseCase {
 
@@ -18,7 +16,7 @@ public class AddModTournamentUseCase {
   private final ValidateTournamentPermissionsService permissionsService;
   private final Integer maxModerators;
 
-  public Mono<Tournament> addMod(Tournament tournament, UUID userId) {
+  public Mono<Tournament> addMod(Tournament tournament, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournament.id())
       .filter(t -> !t.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))

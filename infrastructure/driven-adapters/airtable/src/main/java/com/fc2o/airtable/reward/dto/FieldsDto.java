@@ -2,10 +2,13 @@ package com.fc2o.airtable.reward.dto;
 
 import lombok.Builder;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 @Builder
 public record FieldsDto(
-        String standings,
-        String prizePerStanding,
-        String tournamentId
+  Map<Byte, String> standings,
+  Map<String, BigDecimal> prizePerStanding,
+  String tournamentId
 ) {
 }

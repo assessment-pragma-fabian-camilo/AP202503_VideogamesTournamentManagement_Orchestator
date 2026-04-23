@@ -3,11 +3,11 @@ package com.fc2o.api.dto.tournament.res.finalize;
 import com.fc2o.api.dto.tournament.common.StatusDto;
 import lombok.Builder;
 
-import java.util.UUID;
+
 
 @Builder
 public record TournamentDto(
-  UUID id,
+  String id,
   StatusDto status
 ) {
 }

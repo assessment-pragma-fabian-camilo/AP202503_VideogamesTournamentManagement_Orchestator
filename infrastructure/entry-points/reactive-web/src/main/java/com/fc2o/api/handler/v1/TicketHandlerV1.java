@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.util.UUID;
 
 @Log4j2
 @Component
@@ -31,8 +30,8 @@ public class TicketHandlerV1 {
       .filter(map -> map.get("type").contains("PARTICIPATION"))
       .flatMap(map ->
         registerTicketUseCase.registerParticipationTicket(
-          UUID.fromString(serverRequest.pathVariables().get("tournamentId")),
-          UUID.fromString(serverRequest.pathVariables().get("userId"))
+          serverRequest.pathVariables().get("tournamentId"),
+          serverRequest.pathVariables().get("userId")
         )
       )
       .map(registerTicketMapper::toRegisterTicketResponseDto)
@@ -48,8 +47,8 @@ public class TicketHandlerV1 {
     log.info(serverRequest);
     return blockTicketUseCase
       .blockTicket(
-        UUID.fromString(serverRequest.pathVariables().get("ticketId")),
-        UUID.fromString(serverRequest.pathVariables().get("userId"))
+        serverRequest.pathVariables().get("ticketId"),
+        serverRequest.pathVariables().get("userId")
       )
       .map(blockTicketMapper::toBlockTicketResponseDto)
       .doOnNext(log::info)

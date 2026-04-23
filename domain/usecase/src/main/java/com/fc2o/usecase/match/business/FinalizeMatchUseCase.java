@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class FinalizeMatchUseCase {
@@ -24,7 +23,7 @@ public class FinalizeMatchUseCase {
   * Validar que el winner sea un participante
    */
 
-  public Mono<Match> finalizeMatch(UUID tournamentId, UUID matchId, UUID winnerId, UUID userId) {
+  public Mono<Match> finalizeMatch(String tournamentId, String matchId, String winnerId, String userId) {
     return retrieveMatchUseCase.retrieve(matchId)
       .doOnNext(match -> permissionsService.validate(tournamentId, userId, TournamentUseCases.FINALIZE_MATCH))
       .filter(Match::isFinished)

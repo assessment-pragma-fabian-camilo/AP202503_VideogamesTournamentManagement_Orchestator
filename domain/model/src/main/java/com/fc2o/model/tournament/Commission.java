@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record Commission(
-  Float viewPercentage,
+  Float visualizationPercentage,
   Float participationPercentage,
   Float DonationPercentage
 ) {

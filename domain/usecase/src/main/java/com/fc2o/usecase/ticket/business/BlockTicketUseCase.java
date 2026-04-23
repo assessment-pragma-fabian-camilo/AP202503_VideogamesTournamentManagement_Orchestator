@@ -12,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class BlockTicketUseCase {
 
@@ -22,7 +20,7 @@ public class BlockTicketUseCase {
   private final ValidatePermissionsService permissionsService;
   private final ValidateTournamentPermissionsService tournamentPermissionsService;
 
-  public Mono<Ticket> blockTicket(UUID ticketId, UUID userId) {
+  public Mono<Ticket> blockTicket(String ticketId, String userId) {
     return retrieveTicketUseCase.retrieveTicketById(ticketId)
       .doOnNext(t -> permissionsService.validate(userId, UserUseCases.BLOCK_TICKET))
       .filter(ticket -> !ticket.isBlocked())
@@ -31,7 +29,7 @@ public class BlockTicketUseCase {
       .flatMap(patchTicketUseCase::patch);
   }
 
-  public Flux<Ticket> blockTicketsByTournamentIdAndCustomerId(UUID tournamentId, UUID userId, UUID customerId) {
+  public Flux<Ticket> blockTicketsByTournamentIdAndCustomerId(String tournamentId, String userId, String customerId) {
     return retrieveTicketUseCase.retrieveTicketsByTournamentIdAndCustomerId(tournamentId, customerId)
       .doOnNext(t -> tournamentPermissionsService.validate(tournamentId, userId, TournamentUseCases.BLOCK_TICKET))
       .map(ticket -> Ticket.builder().status(Status.BLOCKED).build())

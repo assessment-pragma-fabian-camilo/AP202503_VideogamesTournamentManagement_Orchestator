@@ -12,43 +12,43 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class DonationHandler implements DonationRepository {
 
-    private final DonationWebClient webClient;
-    private final DonationMapper mapper;
+  private final DonationWebClient webClient;
+  private final DonationMapper mapper;
 
-    @Override
-    public Mono<Donation> findById(String id) {
-        return webClient.retrieveById(id)
-                .map(mapper::toDonation);
-    }
+  @Override
+  public Mono<Donation> findById(String id) {
+    return webClient.retrieveById(id)
+      .map(mapper::toDonation);
+  }
 
-    @Override
-    public Flux<Donation> findAll() {
-        return webClient.retrieveAll()
-                .flatMapMany(dto -> Flux.fromIterable(dto.records()))
-                .map(mapper::toDonation);
-    }
+  @Override
+  public Flux<Donation> findAll() {
+    return webClient.retrieveAll()
+      .flatMapMany(dto -> Flux.fromIterable(dto.records()))
+      .map(mapper::toDonation);
+  }
 
-    @Override
-    public Mono<Donation> save(Donation donation) {
-        return webClient
-                .create(mapper.toWrapperDto(donation))
-                .map(dto -> mapper.toDonation(dto.records().getFirst()));
-    }
+  @Override
+  public Mono<Donation> save(Donation donation) {
+    return webClient
+      .create(mapper.toWrapperDto(donation))
+      .map(dto -> mapper.toDonation(dto.records().getFirst()));
+  }
 
-    @Override
-    public Mono<Donation> update(Donation donation) {
-        return null;
-    }
+  @Override
+  public Mono<Donation> update(Donation donation) {
+    return null;
+  }
 
-    @Override
-    public Mono<Donation> patch(Donation donation) {
-        return webClient
-                .patch(mapper.toWrapperDto(donation))
-                .map(dto -> mapper.toDonation(dto.records().getFirst()));
-    }
+  @Override
+  public Mono<Donation> patch(Donation donation) {
+    return webClient
+      .patch(mapper.toWrapperDto(donation))
+      .map(dto -> mapper.toDonation(dto.records().getFirst()));
+  }
 
-    @Override
-    public Mono<Donation> deleteById(String id) {
-        return null;
-    }
+  @Override
+  public Mono<Donation> deleteById(String id) {
+    return null;
+  }
 }

@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -25,14 +24,14 @@ public class RegisterMatchUseCase {
   * Crear el match en estado NOT_STARTED
    */
 
-  public Mono<Match> registerMatch(UUID tournamentId, Match match, UUID userId) {
-    AtomicReference<StringBuffer> uuidsNotRegistered = new AtomicReference<>();
+  public Mono<Match> registerMatch(String tournamentId, Match match, String userId) {
+    AtomicReference<StringBuffer> StringsNotRegistered = new AtomicReference<>();
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournamentId, userId, TournamentUseCases.REGISTER_MATCH))
       .flatMapMany(tournament ->
         Flux.fromIterable(match.participantIds())
-          .filter(uuid -> !tournament.participantIds().contains(uuid))
-          .doOnNext(uuid -> uuidsNotRegistered.get().append(", ").append(uuid.toString()))
+          .filter(String -> !tournament.participantIds().contains(String))
+          .doOnNext(String -> StringsNotRegistered.get().append(", ").append(String.toString()))
       )
       .singleOrEmpty()
       .switchIfEmpty(
@@ -40,12 +39,12 @@ public class RegisterMatchUseCase {
           new RuntimeException(
             String.format(
               "Los participantes (%s) no están registrados para este torneo",
-              uuidsNotRegistered.get().substring(2)
+              StringsNotRegistered.get().substring(2)
             )
           )
         )
       )
-      .map(uuid -> match.toBuilder().id(UUID.randomUUID()).status(Status.NOT_STARTED).build())
+      .map(String -> match.toBuilder().status(Status.NOT_STARTED).build())
       .flatMap(createMatchUseCase::create);
   }
 }

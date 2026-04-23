@@ -10,8 +10,6 @@ import com.fc2o.usecase.tournament.crud.RetrieveTournamentUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class DisqualifyParticipantUseCase {
   private final RetrieveTournamentUseCase retrieveTournamentUseCase;
@@ -20,7 +18,7 @@ public class DisqualifyParticipantUseCase {
   private final CancelMatchUseCase cancelMatchUseCase;
   private final BlockTicketUseCase blockTicketUseCase;
 
-  public Mono<Tournament> disqualifyParticipant(UUID tournamentId, UUID participantId, UUID userId) {
+  public Mono<Tournament> disqualifyParticipant(String tournamentId, String participantId, String userId) {
     return retrieveTournamentUseCase.retrieveById(tournamentId)
       .doOnNext(tournament -> permissionsService.validate(tournamentId, userId, TournamentUseCases.DISQUALIFY_PARTICIPANT))
       .filter(tournament -> !tournament.isFinished())
@@ -31,7 +29,7 @@ public class DisqualifyParticipantUseCase {
       .switchIfEmpty(Mono.error(new RuntimeException("El participante no está registrado en este torneo")))
       .filter(tournament -> !tournament.preRegisteredParticipantIds().contains(participantId))
       .switchIfEmpty(Mono.error(new RuntimeException("El participante no está pre-registrado en este torneo")))
-      .flatMap(tournament -> patchTournamentUseCase.patchDisqualify(tournamentId))
+      .flatMap(tournament -> patchTournamentUseCase.patchDisqualify(tournamentId, participantId))
       .doOnNext(tournament -> blockTicketUseCase.blockTicketsByTournamentIdAndCustomerId(tournamentId, userId, participantId))
       .doOnNext(tournament -> cancelMatchUseCase.cancelAllMatchesByParticipantIdAndTournamentId(participantId, tournamentId));
   }

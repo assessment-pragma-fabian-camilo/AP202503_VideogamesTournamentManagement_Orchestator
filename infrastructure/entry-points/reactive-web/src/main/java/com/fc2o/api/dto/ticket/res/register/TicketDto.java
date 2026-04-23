@@ -4,14 +4,14 @@ import com.fc2o.api.dto.ticket.common.StatusDto;
 import com.fc2o.api.dto.ticket.common.TypeDto;
 import lombok.Builder;
 
-import java.util.UUID;
+
 
 @Builder
 public record TicketDto(
-  UUID id,
-  UUID customerId,
-  UUID tournamentId,
-  UUID transactionId,
+  String id,
+  String customerId,
+  String tournamentId,
+  String transactionId,
   StatusDto status,
   TypeDto type
 ) {

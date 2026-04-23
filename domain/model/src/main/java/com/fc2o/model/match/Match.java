@@ -4,14 +4,14 @@ import lombok.Builder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record Match(
-  UUID id,
-  Set<UUID> participantIds,
-  UUID winnerId,
-  UUID tournamentId,
+  String id,
+  LocalDateTime createdTime,
+  Set<String> participantIds,
+  String winnerId,
+  String tournamentId,
   LocalDateTime timeStart,
   LocalDate dateStart,
   LocalDateTime timeEnd,

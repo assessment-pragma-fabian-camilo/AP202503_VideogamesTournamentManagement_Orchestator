@@ -16,7 +16,7 @@ import com.fc2o.usecase.user.crud.RetrieveUserUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class RegisterParticipantUseCase {
   * Crear el registro Registration
    */
 
-  public Mono<Tournament> registerParticipant(UUID ticketId, UUID participantId, UUID tournamentId) {
+  public Mono<Tournament> registerParticipant(String ticketId, String participantId, String tournamentId) {
     return retrieveUserUseCase.retrieveById(participantId)
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))
@@ -65,7 +65,7 @@ public class RegisterParticipantUseCase {
       .filter(tournament -> !tournament.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .flatMap(tournament ->
-        patchTournamentUseCase.patchRegisterParticipant(participantId)
+        patchTournamentUseCase.patchRegisterParticipant(tournamentId, participantId)
       )
       .doOnNext(tournament ->
         patchRegistrationUseCase.patch(Registration.builder().status(com.fc2o.model.registration.Status.APPROVED).build())
@@ -73,8 +73,8 @@ public class RegisterParticipantUseCase {
       .doOnNext(ticket -> patchTicketUseCase.patch(Ticket.builder().status(Status.USED).build()));
   }
 
-  public Mono<Tournament> forceRegisterParticipant(UUID ticketId, UUID userId) {
-    AtomicReference<UUID> customerId = new AtomicReference<>();
+  public Mono<Tournament> forceRegisterParticipant(String ticketId, String userId) {
+    AtomicReference<String> customerId = new AtomicReference<>();
     return retrieveUserUseCase.retrieveById(customerId.get())
       .filter(User::isActive)
       .switchIfEmpty(Mono.error(new RuntimeException("No puedes participar: Estas baneado en la plataforma")))
@@ -98,7 +98,7 @@ public class RegisterParticipantUseCase {
       .filter(tournament -> !tournament.isCanceled())
       .switchIfEmpty(Mono.error(new RuntimeException("El torneo fue cancelado")))
       .flatMap(tournament ->
-        patchTournamentUseCase.patchRegisterParticipant(customerId.get())
+        patchTournamentUseCase.patchRegisterParticipant(tournament.id(), customerId.get())
       )
       .doOnNext(tournament ->
         patchRegistrationUseCase.patch(Registration.builder().status(com.fc2o.model.registration.Status.APPROVED).build())

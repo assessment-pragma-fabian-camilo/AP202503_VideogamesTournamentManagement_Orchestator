@@ -4,11 +4,10 @@ import lombok.Builder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record User(
-  UUID id,
+  String id,
   LocalDateTime createdTime,
   String alias,
   String name,

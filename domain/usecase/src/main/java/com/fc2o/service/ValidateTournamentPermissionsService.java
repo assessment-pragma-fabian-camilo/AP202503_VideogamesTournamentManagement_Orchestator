@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 public class ValidateTournamentPermissionsService extends ValidatePermissionsService {
@@ -29,7 +28,7 @@ public class ValidateTournamentPermissionsService extends ValidatePermissionsSer
     this.retrieveTournamentUseCase = retrieveTournamentUseCase;
   }
 
-  public void validate(UUID tournamentId, UUID userId, TournamentUseCases tournamentUseCases) {
+  public void validate(String tournamentId, String userId, TournamentUseCases tournamentUseCases) {
     super.validate(userId, super.roles.get(Tournament.class).get(tournamentUseCases));
 
     Mono<Tournament> tournamentMono = retrieveTournamentUseCase.retrieveById(tournamentId);

@@ -28,7 +28,7 @@ public class ValidatePermissionsService {
       .forEach(role -> validatorRoles.put(role, Map.of(User.class, user -> ((User) user).roles().contains(role))));
   }
 
-  public final void validate(UUID userId, List<Role> roles) {
+  public final void validate(String userId, List<Role> roles) {
     Mono<User> userMono = retrieveUserUseCase.retrieveById(userId);
     Flux.fromIterable(roles)
       .flatMap(role -> userMono.map(validatorRoles.get(role).get(User.class)))
@@ -38,7 +38,7 @@ public class ValidatePermissionsService {
       .then();
   }
 
-  public final void validate(UUID userId, UserUseCases userUseCases) {
+  public final void validate(String userId, UserUseCases userUseCases) {
     Mono<User> userMono = retrieveUserUseCase.retrieveById(userId);
     Flux.fromIterable(roles.get(User.class).get(userUseCases))
       .flatMap(role -> userMono.map(validatorRoles.get(role).get(User.class)))

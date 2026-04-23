@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class CancelMatchUseCase {
   private final RetrieveMatchUseCase retrieveMatchUseCase;
@@ -24,7 +22,7 @@ public class CancelMatchUseCase {
   * Actualizar estado a CANCELED
    */
 
-  public Mono<Match> cancelMatch(UUID matchId, UUID tournamentId, UUID userId) {
+  public Mono<Match> cancelMatch(String matchId, String tournamentId, String userId) {
     return retrieveMatchUseCase.retrieve(matchId)
       .doOnNext(match -> permissionsService.validate(tournamentId, userId, TournamentUseCases.CANCEL_MATCH))
       .filter(match -> !match.isFinished())
@@ -35,7 +33,7 @@ public class CancelMatchUseCase {
       .flatMap(patchMatchUseCase::patch);
   }
 
-  public Flux<Match> cancelAllMatchesByParticipantIdAndTournamentId(UUID participantId, UUID tournamentId) {
+  public Flux<Match> cancelAllMatchesByParticipantIdAndTournamentId(String participantId, String tournamentId) {
     return retrieveMatchUseCase.retrieveAllByParticipantIdAndTournamentId(participantId, tournamentId)
       .filter(match -> !match.isFinished())
       .filter(match -> !match.isCanceled())
@@ -43,7 +41,7 @@ public class CancelMatchUseCase {
       .flatMap(patchMatchUseCase::patch);
   }
 
-  public Flux<Match> cancelAllMatchesByTournamentId(UUID tournamentId) {
+  public Flux<Match> cancelAllMatchesByTournamentId(String tournamentId) {
     return retrieveMatchUseCase.retrieveAllByTournamentId(tournamentId)
       .filter(match -> !match.isFinished())
       .filter(match -> !match.isCanceled())

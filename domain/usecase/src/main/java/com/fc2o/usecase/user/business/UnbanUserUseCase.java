@@ -9,7 +9,7 @@ import com.fc2o.usecase.user.crud.RetrieveUserUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+
 
 @RequiredArgsConstructor
 public class UnbanUserUseCase {
@@ -18,7 +18,7 @@ public class UnbanUserUseCase {
   private final PatchUserUseCase patchUserUseCase;
   private final ValidatePermissionsService permissionsService;
 
-  public Mono<User> unbanUser(UUID adminId, UUID userId) {
+  public Mono<User> unbanUser(String adminId, String userId) {
     return retrieveUserUseCase.retrieveById(userId)
       .doOnNext(user -> permissionsService.validate(adminId, UserUseCases.UNBAN_USER))
       .map(user -> User.builder().status(Status.ACTIVE).build())

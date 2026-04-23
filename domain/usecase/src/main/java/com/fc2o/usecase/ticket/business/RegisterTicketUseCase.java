@@ -9,8 +9,6 @@ import com.fc2o.usecase.transaction.crud.RetrieveTransactionUseCase;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class RegisterTicketUseCase {
 
@@ -21,13 +19,12 @@ public class RegisterTicketUseCase {
   * Validar que haya una transacción en estado APPROVED
    */
 
-  public Mono<Ticket> registerParticipationTicket(UUID tournamentId, UUID customerId) {
+  public Mono<Ticket> registerParticipationTicket(String tournamentId, String customerId) {
     return retrieveTransactionUseCase.retrieveByTournamentIdAndCustomerId(tournamentId, customerId)
       .filter(Transaction::isApproved)
       .switchIfEmpty(Mono.error(new RuntimeException("La transacción aún no ha sido aprobada")))
       .map(transaction ->
         Ticket.builder()
-          .id(UUID.randomUUID())
           .transactionId(transaction.id())
           .status(Status.NEW)
           .type(Type.PARTICIPATION)

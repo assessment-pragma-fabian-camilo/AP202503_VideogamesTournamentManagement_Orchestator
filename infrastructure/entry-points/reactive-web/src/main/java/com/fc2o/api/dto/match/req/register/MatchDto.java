@@ -4,11 +4,11 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.UUID;
+
 
 @Builder
 public record MatchDto(
-  Set<UUID> participantIds,
+  Set<String> participantIds,
   LocalDate dateStart
 ) {
 }
