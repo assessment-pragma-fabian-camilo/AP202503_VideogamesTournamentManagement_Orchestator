@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface TeamRepository {
   Mono<Team> findById(UUID id);
+  Mono<Team> findByCustomerId(UUID id);
   Flux<Team> findAll();
   Mono<Team> save(Team team);
   Mono<Team> update(Team team);

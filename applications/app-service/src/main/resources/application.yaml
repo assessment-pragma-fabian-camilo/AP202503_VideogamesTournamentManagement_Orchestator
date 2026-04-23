@@ -12,3 +12,6 @@ spring:
       path: /h2
   profiles:
     include:
+tournament:
+  max-mods: 2
+  max-free-tournaments: 2

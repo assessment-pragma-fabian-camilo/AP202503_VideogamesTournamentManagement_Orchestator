@@ -1,22 +1,19 @@
 package com.fc2o.model.reward;
-
 import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+//import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.UUID;
 
 @Builder(toBuilder = true)
 public record Reward(
-        String id,
-        String createdAt,
-        String tournamentId,
-        String teamId,
-        Short position,
-        Double prize
+  UUID id,
+  Map<Byte, UUID> standings,
+  Map<UUID, BigDecimal> prizePerStanding,
+  UUID tournamentId
 ) {
-
-    public boolean hasTeam() {
-        return teamId != null;
-    }
-
-    public boolean hasPrize() {
-        return prize != null;
-    }
 }

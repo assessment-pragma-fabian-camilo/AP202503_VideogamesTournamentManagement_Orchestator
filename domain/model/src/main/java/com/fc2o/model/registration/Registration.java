@@ -8,7 +8,7 @@ import java.util.UUID;
 public record Registration(
   UUID id,
   UUID tournamentId,
-  UUID teamId,
+  UUID participantId,
   LocalDateTime createdTime,
   Status status
 ) {
