@@ -1,4 +1,4 @@
-package com.fc2o.api.dto.tournamentteam;
+package com.fc2o.api.dto.request.tournamentteam;
 
 import lombok.Builder;
 

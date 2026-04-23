@@ -21,4 +21,3 @@ public interface TicketMapper {
         return qr == null ? null : Base64.getEncoder().encodeToString(qr);
     }
 }
-

@@ -1,7 +1,6 @@
 package com.fc2o.api.handler;
 
-import com.fc2o.api.dto.tournamentteam.CreateTournamentTeamRequest;
-import com.fc2o.api.dto.tournamentteam.TournamentTeamResponse;
+import com.fc2o.api.dto.response.tournamentteam.TournamentTeamResponse;
 import com.fc2o.api.mapper.tournamentteam.TournamentTeamMapper;
 import com.fc2o.usecase.tournamentteam.CheckTeamInTournamentUseCase;
 import com.fc2o.usecase.tournamentteam.GetTournamentTeamUseCase;
